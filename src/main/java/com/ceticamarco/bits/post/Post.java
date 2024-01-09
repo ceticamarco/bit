@@ -1,8 +1,9 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.user.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.lang.NonNull;
 
 import java.time.LocalDate;
 
@@ -16,25 +17,23 @@ public class Post {
             name = "customUUID",
             type = com.ceticamarco.bits.customGenerator.CustomUUID.class
     )
-    @NonNull private String id;
+    private String id;
 
     @Column(name = "title", nullable = false)
-    @NonNull private String title;
+    @NotEmpty(message = "title cannot be empty")
+    private String title;
 
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-    @NonNull private String content;
+    @NotEmpty(message = "content cannot be empty")
+    private String content;
 
     @Column(name = "created_at", nullable = false)
-    @NonNull private LocalDate createdAt;
+    private LocalDate createdAt;
 
-    @Column(name = "expiration_date", nullable = true)
-    @NonNull private LocalDate expirationDate;
+    @Column(name = "expiration_date")
+    private LocalDate expirationDate;
 
-    public Post(String id, String title, String content, LocalDate createdAt, LocalDate expirationDate) {
-        this.id = id;
-        this.title = title;
-        this.content = content;
-        this.createdAt = createdAt;
-        this.expirationDate = expirationDate;
-    }
+    @ManyToOne
+    @JoinColumn(name = "userID")
+    private User user;
 }

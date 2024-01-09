@@ -1,8 +1,12 @@
 package com.ceticamarco.bits.user;
 
+import com.ceticamarco.bits.customGenerator.CustomUUID;
+import com.ceticamarco.bits.post.Post;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
-import org.springframework.lang.NonNull;
+
+import java.util.List;
 
 @Entity
 @Table(name = "bts_users")
@@ -12,24 +16,40 @@ public class User {
     @GeneratedValue(generator = "customUUID")
     @GenericGenerator(
             name = "customUUID",
-            type = com.ceticamarco.bits.customGenerator.CustomUUID.class
+            type = CustomUUID.class
     )
-    @NonNull private String id;
+    private String id;
 
+    @NotEmpty(message = "username cannot be empty")
     @Column(name = "username", nullable = false)
-    @NonNull private String username;
+    private String username;
 
+    @NotEmpty(message = "email cannot be empty")
     @Column(name = "email", nullable = false)
-    @NonNull private String email;
+    private String email;
 
+    @NotEmpty(message = "password cannot be empty")
     @Column(name = "password", nullable = false)
-    @NonNull private String password;
+    private String password;
 
+    @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
+    private List<Post> post;
 
-    public User(String id, String username, String email, String password) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
-        this.password = password;
+    public User() {}
+
+    public String getEmail() {
+        return this.email;
+    }
+
+    public String getUsername() {
+        return this.username;
+    }
+
+    public String getPassword() {
+        return this.password;
+    }
+
+    public String getId() {
+        return this.id;
     }
 }
