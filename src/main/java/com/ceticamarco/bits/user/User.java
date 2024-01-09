@@ -1,12 +1,11 @@
 package com.ceticamarco.bits.user;
 
-import com.ceticamarco.bits.customGenerator.CustomUUID;
 import jakarta.persistence.*;
 import org.hibernate.annotations.GenericGenerator;
 import org.springframework.lang.NonNull;
 
 @Entity
-@Table(name = "b_users")
+@Table(name = "bts_users")
 public class User {
     @Id
     @Column(name = "userID", nullable = false)

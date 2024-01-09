@@ -7,7 +7,7 @@ import org.springframework.lang.NonNull;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "b_posts")
+@Table(name = "bts_posts")
 public class Post {
     @Id
     @Column(name = "postID", nullable = false)

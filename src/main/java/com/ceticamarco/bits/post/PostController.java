@@ -5,6 +5,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@RestController
 public class PostController {
     /**
      * Get the list of all posts
@@ -12,7 +13,7 @@ public class PostController {
      * @return the list of the posts
      */
     @GetMapping("/posts")
-    public List<User> getPosts() {
+    public List<Post> getPosts() {
         return null;
     }
 

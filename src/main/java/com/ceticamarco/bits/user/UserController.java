@@ -2,6 +2,7 @@ package com.ceticamarco.bits.user;
 
 import org.springframework.web.bind.annotation.*;
 
+@RestController
 public class UserController {
     /**
      * Add a new user
