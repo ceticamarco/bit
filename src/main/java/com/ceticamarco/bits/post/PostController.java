@@ -1,6 +1,9 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.user.User;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 public class PostController {
     /**
@@ -38,11 +41,11 @@ public class PostController {
     /**
      * Update a post
      *
-     * @param user the post to update
+     * @param post the post to update
      * @return on failure, the error message.
      */
     @PutMapping("/posts")
-    public String updatePost(@RequestBody User user) {
+    public String updatePost(@RequestBody Post post) {
         return "";
     }
 
