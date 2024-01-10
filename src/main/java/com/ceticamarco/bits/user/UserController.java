@@ -1,5 +1,7 @@
 package com.ceticamarco.bits.user;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,14 +11,15 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 public class UserController {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public String handleValidationExceptions(MethodArgumentNotValidException ex) {
         var errors = new HashMap<String, String>();
+        var jsonErrors = "";
+        var objectMapper = new ObjectMapper();
 
         ex.getBindingResult().getAllErrors().forEach((e) -> {
             var fieldName = ((FieldError) e).getField();
@@ -24,7 +27,13 @@ public class UserController {
             errors.put(fieldName, errMessage);
         });
 
-        return errors;
+        try {
+            jsonErrors = objectMapper.writeValueAsString(errors);
+        } catch(JsonProcessingException e) {
+            throw new RuntimeException(e.getMessage());
+        }
+
+        return jsonErrors;
     }
 
     private final UserService userService;
@@ -42,11 +51,26 @@ public class UserController {
      */
     @PostMapping("/users")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
-        var res = userService.addNewUser(user);
+        var objectMapper = new ObjectMapper();
+        var res = userService.addNewUser(user).map(user_id -> {
+            try {
+                var jsonNode = objectMapper.createObjectNode().put("user_id", user_id);
+                return objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }).swap().map(error -> {
+            try {
+                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
+                return objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }).swap();
 
         return res.isRight()
                 ? new ResponseEntity<>(res.get(), HttpStatus.OK)
-                : new ResponseEntity<>(res.getLeft().getMessage(), HttpStatus.BAD_REQUEST);
+                : new ResponseEntity<>(res.getLeft(), HttpStatus.BAD_REQUEST);
     }
 
     /**
@@ -59,13 +83,28 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            return new ResponseEntity<>("Specify both email and password", HttpStatus.BAD_REQUEST);
+            var objectMapper = new ObjectMapper();
+            var res = "";
+            var jsonNode = objectMapper.createObjectNode().put("error", "Specify both email and password");
+            try {
+                res = objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
         }
-
         // Delete the user
         var res = userService.deleteUser(user);
-
-        return res.map(error -> new ResponseEntity<>(error.getMessage(), HttpStatus.BAD_REQUEST))
-                   .orElseGet(() -> new ResponseEntity<>("OK", HttpStatus.OK));
+        return res.map(error -> {
+            var objectMapper = new ObjectMapper();
+            var json = "";
+            var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
+            try {
+                json = objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return new ResponseEntity<>(json, HttpStatus.BAD_REQUEST);
+        }).orElseGet(() -> new ResponseEntity<>("{\"status\": \"OK\"}", HttpStatus.OK));
     }
 }

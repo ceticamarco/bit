@@ -1,8 +1,6 @@
 package com.ceticamarco.bits.post;
 
-import com.ceticamarco.bits.user.User;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
