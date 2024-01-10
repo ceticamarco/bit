@@ -1,9 +1,12 @@
 package com.ceticamarco.bits.user;
 
 import io.vavr.control.Either;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 public class UserService {
@@ -34,5 +37,27 @@ public class UserService {
         var userId = userRepository.save(user).getId();
 
         return Either.right(userId);
+    }
+
+    @Transactional
+    public Optional<Error> deleteUser(User user) {
+        // Search user password by its email
+        var rawPassword = user.getPassword();
+        var encodedPassword = userRepository.findPasswordByEmail(user.getEmail());
+
+        // Check whether user exists
+        if(encodedPassword.isEmpty()) {
+            return Optional.of(new Error("Cannot find user."));
+        }
+
+        // Otherwise compare the hash
+        var isHashEqual = passwordEncoder.matches(rawPassword, encodedPassword.get());
+        if(!isHashEqual) {
+            return Optional.of(new Error("Wrong password."));
+        }
+
+        userRepository.deleteUserByEmail(user.getEmail());
+
+        return Optional.empty();
     }
 }

@@ -50,24 +50,22 @@ public class UserController {
     }
 
     /**
-     * Update an existing user
-     *
-     * @param user the user to update
-     * @return on failure, the error message
-     */
-    @PutMapping("/users")
-    public String updateUser(@RequestBody User user) {
-        return "";
-    }
-
-    /**
      * Delete an existing user
      *
-     * @param userId the user ID to delete
+     * @param user the email and the password of the user
      * @return on failure, the error message
      */
-    @DeleteMapping("/users/{userId}")
-    public String deleteUser(@PathVariable("userId") Integer userId) {
-        return "";
+    @DeleteMapping("/users")
+    public ResponseEntity<String> deleteUser(@RequestBody User user) {
+        // Check if email and password are specified
+        if(user.getPassword() == null || user.getEmail() == null) {
+            return new ResponseEntity<>("Specify both email and password", HttpStatus.BAD_REQUEST);
+        }
+
+        // Delete the user
+        var res = userService.deleteUser(user);
+
+        return res.map(error -> new ResponseEntity<>(error.getMessage(), HttpStatus.BAD_REQUEST))
+                   .orElseGet(() -> new ResponseEntity<>("OK", HttpStatus.OK));
     }
 }
