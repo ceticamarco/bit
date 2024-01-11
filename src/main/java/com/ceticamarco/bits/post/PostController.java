@@ -63,11 +63,11 @@ public class PostController {
      * @return the content of the post
      */
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<String> getPost(@PathVariable("postId") String postId) {
+    public ResponseEntity<String> getPostById(@PathVariable("postId") String postId) {
         var objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
         objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        var res = postService.getPost(postId).map(post -> {
+        var res = postService.getPostById(postId).map(post -> {
             try {
                 return objectMapper.writeValueAsString(post);
             } catch(JsonProcessingException e) {
@@ -88,12 +88,24 @@ public class PostController {
     }
 
     /**
+     * Get posts by title
+     *
+     * @param req the body contains the title.
+     *            Without the title, it acts the same as 'GET /posts'
+     * @return the list of posts
+     */
+    @PostMapping("/posts")
+    public ResponseEntity<List<Post>> getPostByTitle(@RequestBody Post req) {
+        return new ResponseEntity<>(postService.getPostByTitle(req.getTitle()), HttpStatus.OK);
+    }
+
+    /**
      * Add a new post
      *
      * @param post the new post to be submitted
      * @return on success the new postId, on failure the error message
      */
-    @PostMapping("/posts")
+    @PostMapping("/posts/new")
     public ResponseEntity<String> submitPost(@Valid @RequestBody Post post) {
         var objectMapper = new ObjectMapper();
         var res = postService.addNewPost(post).map(postId -> {

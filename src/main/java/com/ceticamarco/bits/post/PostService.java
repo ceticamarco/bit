@@ -43,8 +43,8 @@ public class PostService {
         }).collect(Collectors.toList());
     }
 
-    Either<Error, Post> getPost(String postId) {
-        Optional<Post> post = postRepository.findById(postId);
+    Either<Error, Post> getPostById(String postId) {
+        var post = postRepository.findById(postId);
 
         // Check whether the post exists or not
         if(post.isEmpty()) {
@@ -58,7 +58,20 @@ public class PostService {
         }
 
         return Either.right(post.get());
+    }
 
+    List<Post> getPostByTitle(String title) {
+        var postList = postRepository.findPostByTitle(title);
+
+        // Conceal user information
+        postList.forEach(post -> {
+            if(post.getUser() != null) {
+                post.getUser().setId(null);
+                post.getUser().setPassword(null);
+            }
+        });
+
+        return postList;
     }
 
     Either<Error, String> addNewPost(Post post) {
