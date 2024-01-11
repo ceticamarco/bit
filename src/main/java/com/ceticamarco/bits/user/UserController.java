@@ -52,9 +52,9 @@ public class UserController {
     @PostMapping("/users")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
         var objectMapper = new ObjectMapper();
-        var res = userService.addNewUser(user).map(user_id -> {
+        var res = userService.addNewUser(user).map(userId -> {
             try {
-                var jsonNode = objectMapper.createObjectNode().put("user_id", user_id);
+                var jsonNode = objectMapper.createObjectNode().put("user_id", userId);
                 return objectMapper.writeValueAsString(jsonNode);
             } catch(JsonProcessingException e) {
                 throw new RuntimeException(e.getMessage());

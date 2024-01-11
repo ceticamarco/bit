@@ -26,7 +26,7 @@ public class UserService {
 
         // If they are found, return an error
         if(userEmail.isPresent() || userName.isPresent()) {
-            return Either.left(new Error("Email or username already taken."));
+            return Either.left(new Error("Email or username already taken"));
         }
 
         // Hash the password
@@ -47,13 +47,13 @@ public class UserService {
 
         // Check whether user exists
         if(encodedPassword.isEmpty()) {
-            return Optional.of(new Error("Cannot find user."));
+            return Optional.of(new Error("Cannot find user"));
         }
 
         // Otherwise compare the hash
         var isHashEqual = passwordEncoder.matches(rawPassword, encodedPassword.get());
         if(!isHashEqual) {
-            return Optional.of(new Error("Wrong password."));
+            return Optional.of(new Error("Wrong password"));
         }
 
         userRepository.deleteUserByEmail(user.getEmail());

@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 @Service
 public class PostService {
@@ -28,6 +29,24 @@ public class PostService {
 
         // Return true if user email exists and the password matches
         return encodedPassword.filter(s -> passwordEncoder.matches(rawPassword, s)).isPresent();
+    }
+
+    Either<Error, Post> getPost(String postId) {
+        Optional<Post> post = postRepository.findById(postId);
+
+        // Check whether the post exists or not
+        if(post.isEmpty()) {
+            return Either.left(new Error("Cannot find post"));
+        }
+
+        // Conceal personal user information if available
+        if(post.get().getUser() != null) {
+            post.get().getUser().setId(null);
+            post.get().getUser().setPassword(null);
+        }
+
+        return Either.right(post.get());
+
     }
 
     Either<Error, String> addNewPost(Post post) {

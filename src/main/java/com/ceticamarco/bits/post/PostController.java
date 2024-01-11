@@ -2,6 +2,8 @@ package com.ceticamarco.bits.post;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -61,8 +63,28 @@ public class PostController {
      * @return the content of the post
      */
     @GetMapping("/posts/{postId}")
-    public String getPost(@PathVariable("postId") Integer postId) {
-        return "";
+    public ResponseEntity<String> getPost(@PathVariable("postId") String postId) {
+        var objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        var res = postService.getPost(postId).map(post -> {
+            try {
+                return objectMapper.writeValueAsString(post);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }).swap().map(error -> {
+            try {
+                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
+                return objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }).swap();
+
+        return res.isRight()
+                ? new ResponseEntity<>(res.get(), HttpStatus.OK)
+                :  new ResponseEntity<>(res.getLeft(), HttpStatus.BAD_REQUEST);
     }
 
     /**

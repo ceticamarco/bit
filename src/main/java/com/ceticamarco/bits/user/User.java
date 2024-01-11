@@ -37,6 +37,8 @@ public class User {
 
     public User() {}
 
+    public String getId() { return this.id; }
+
     public String getEmail() { return this.email; }
 
     public String getUsername() { return this.username; }
@@ -45,5 +47,5 @@ public class User {
 
     public void setPassword(String password) { this.password = password; }
 
-    public String getId() { return this.id; }
+    public void setId(String id) { this.id = id; }
 }

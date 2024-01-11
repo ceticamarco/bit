@@ -45,6 +45,8 @@ public class Post {
 
     public String getContent() { return this.content; }
 
+    public LocalDate getExpirationDate() { return this.expirationDate; }
+
     public User getUser() { return this.user; }
 
     public void setUser(User user) { this.user = user; }
