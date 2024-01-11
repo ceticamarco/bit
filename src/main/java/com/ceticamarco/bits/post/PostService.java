@@ -8,7 +8,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PostService {
@@ -29,6 +31,16 @@ public class PostService {
 
         // Return true if user email exists and the password matches
         return encodedPassword.filter(s -> passwordEncoder.matches(rawPassword, s)).isPresent();
+    }
+
+    List<Post> getPosts() {
+        return postRepository.findAll().stream().map(post -> {
+            if(post.getUser() != null) {
+                post.getUser().setId(null);
+                post.getUser().setPassword(null);
+            }
+            return post;
+        }).collect(Collectors.toList());
     }
 
     Either<Error, Post> getPost(String postId) {
