@@ -37,23 +37,13 @@ public class User {
 
     public User() {}
 
-    public String getEmail() {
-        return this.email;
-    }
+    public String getEmail() { return this.email; }
 
-    public String getUsername() {
-        return this.username;
-    }
+    public String getUsername() { return this.username; }
 
-    public String getPassword() {
-        return this.password;
-    }
+    public String getPassword() { return this.password; }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+    public void setPassword(String password) { this.password = password; }
 
-    public String getId() {
-        return this.id;
-    }
+    public String getId() { return this.id; }
 }

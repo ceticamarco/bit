@@ -19,12 +19,12 @@ public class Post {
     )
     private String id;
 
-    @Column(name = "title", nullable = false)
     @NotEmpty(message = "title cannot be empty")
+    @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     @NotEmpty(message = "content cannot be empty")
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
     @Column(name = "created_at", nullable = false)
@@ -36,4 +36,18 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "userID")
     private User user;
+
+    public Post() {}
+
+    public String getId() { return this.id; }
+
+    public String getTitle() { return this.title; }
+
+    public String getContent() { return this.content; }
+
+    public User getUser() { return this.user; }
+
+    public void setUser(User user) { this.user = user; }
+
+    public void setCreatedAt(LocalDate date) { this.createdAt = date; }
 }
