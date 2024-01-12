@@ -43,7 +43,7 @@ public class UserService {
     public Optional<Error> deleteUser(User user) {
         // Search user password by its email
         var rawPassword = user.getPassword();
-        var encodedPassword = userRepository.findPasswordByEmail(user.getEmail());
+        var encodedPassword = userRepository.findUserByUsername(user.getEmail());
 
         // Check whether user exists
         if(encodedPassword.isEmpty()) {
@@ -51,7 +51,7 @@ public class UserService {
         }
 
         // Otherwise compare the hash
-        var isHashEqual = passwordEncoder.matches(rawPassword, encodedPassword.get());
+        var isHashEqual = passwordEncoder.matches(rawPassword, encodedPassword.get().getPassword());
         if(!isHashEqual) {
             return Optional.of(new Error("Wrong password"));
         }

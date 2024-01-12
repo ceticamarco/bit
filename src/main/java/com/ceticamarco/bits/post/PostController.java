@@ -133,11 +133,22 @@ public class PostController {
      * Update a post
      *
      * @param post the post to update
+     * @param postId the id of the post to update
      * @return on failure, the error message.
      */
-    @PutMapping("/posts")
-    public String updatePost(@RequestBody Post post) {
-        return "";
+    @PutMapping("/posts/{postId}")
+    public ResponseEntity<String> updatePost(@Valid @RequestBody Post post, @PathVariable("postId") String postId) {
+        var res = postService.updatePost(post, postId);
+        var objectMapper = new ObjectMapper();
+
+        return res.map(error -> {
+            try {
+                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
+                return new ResponseEntity<>(objectMapper.writeValueAsString(jsonNode), HttpStatus.BAD_REQUEST);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+        }).orElseGet(() -> new ResponseEntity<>("{\"status\": \"OK\"}", HttpStatus.OK));
     }
 
     /**

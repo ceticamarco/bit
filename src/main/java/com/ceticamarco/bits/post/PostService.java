@@ -3,12 +3,14 @@ package com.ceticamarco.bits.post;
 import com.ceticamarco.bits.user.User;
 import com.ceticamarco.bits.user.UserRepository;
 import io.vavr.control.Either;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -25,12 +27,12 @@ public class PostService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    private boolean isUserRegistered(User user) {
-        var encodedPassword = userRepository.findPasswordByEmail(user.getEmail());
+    private boolean isUserNotRegistered(User user) {
+        var encodedPassword = userRepository.findUserByEmail(user.getEmail());
         var rawPassword = user.getPassword();
 
         // Return true if user email exists and the password matches
-        return encodedPassword.filter(s -> passwordEncoder.matches(rawPassword, s)).isPresent();
+        return encodedPassword.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty();
     }
 
     List<Post> getPosts() {
@@ -46,7 +48,7 @@ public class PostService {
     Either<Error, Post> getPostById(String postId) {
         var post = postRepository.findById(postId);
 
-        // Check whether the post exists or not
+        // Check whether the post exists
         if(post.isEmpty()) {
             return Either.left(new Error("Cannot find post"));
         }
@@ -77,8 +79,11 @@ public class PostService {
     Either<Error, String> addNewPost(Post post) {
         // Check whether the user email and user password are specified
         if(post.getUser() != null && post.getUser().getEmail() != null && post.getUser().getPassword() != null) {
+            var user = userRepository.findUserByEmail(post.getUser().getEmail());
+            var rawPassword = post.getUser().getPassword();
+
             // Then check if user is registered
-            if(!isUserRegistered(post.getUser())) {
+            if(user.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty()) {
                 return Either.left(new Error("Wrong email or password"));
             }
             // Retrieve the user by its email
@@ -96,5 +101,50 @@ public class PostService {
         var postId = postRepository.save(post).getId();
 
         return Either.right(postId);
+    }
+
+    @Transactional
+    Optional<Error> updatePost(Post req, String postId) {
+        var post = postRepository.findById(postId);
+
+        // Check whether the post exists
+        if(post.isEmpty()) {
+            return Optional.of(new Error("Cannot find post"));
+        }
+
+        // Check whether email and password are specified in the request
+        if(req.getUser() == null || req.getUser().getEmail() == null || req.getUser().getPassword() == null) {
+            return Optional.of(new Error("Email or password not provided"));
+        }
+
+        // Check whether post is anonymous
+        if(post.get().getUser() == null) {
+            return Optional.of(new Error("Cannot modify an anonymous post"));
+        }
+
+        // Check if user is registered
+        var user = userRepository.findUserByEmail(req.getUser().getEmail());
+        var rawPassword = req.getUser().getPassword();
+        if(user.isEmpty()) {
+            return Optional.of(new Error("Cannot find this user"));
+        }
+
+        // Check if credentials are correct
+        if(!passwordEncoder.matches(rawPassword, user.get().getPassword())) {
+            return Optional.of(new Error("Wrong password"));
+        }
+
+        // Check if user has ownership over post
+        if(!Objects.equals(user.get().getId(), post.get().getUser().getId())) {
+            return Optional.of(new Error("Cannot modify this post"));
+        }
+
+        // Otherwise update both title and content
+        var modifiedRows = postRepository.updatePostById(req.getTitle(), req.getContent(), postId);
+
+
+        return modifiedRows != 1
+                ? Optional.of((new Error("Error while updating post")))
+                : Optional.empty();
     }
 }
