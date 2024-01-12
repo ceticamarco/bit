@@ -1,10 +1,7 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.json.JsonEmitter;
 import com.ceticamarco.bits.user.User;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -24,8 +21,6 @@ public class PostController {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public String handleValidationExceptions(MethodArgumentNotValidException ex) {
         var errors = new HashMap<String, String>();
-        var jsonErrors = "";
-        var objectMapper = new ObjectMapper();
 
         ex.getBindingResult().getAllErrors().forEach((e) -> {
             var fieldName = ((FieldError) e).getField();
@@ -33,13 +28,7 @@ public class PostController {
             errors.put(fieldName, errMessage);
         });
 
-        try {
-            jsonErrors = objectMapper.writeValueAsString(errors);
-        } catch(JsonProcessingException e) {
-            throw new RuntimeException(e.getMessage());
-        }
-
-        return jsonErrors;
+        return new JsonEmitter<>(errors).emitJsonKey();
     }
 
     @Autowired
@@ -65,23 +54,11 @@ public class PostController {
      */
     @GetMapping("/posts/{postId}")
     public ResponseEntity<String> getPostById(@PathVariable("postId") String postId) {
-        var objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
-        var res = postService.getPostById(postId).map(post -> {
-            try {
-                return objectMapper.writeValueAsString(post);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }).swap().map(error -> {
-            try {
-                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
-                return objectMapper.writeValueAsString(jsonNode);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }).swap();
+        var res = postService.getPostById(postId)
+                .map(post -> new JsonEmitter<>(post).emitJsonKey())
+                .swap()
+                .map(error -> new JsonEmitter<>(error.getMessage()).emitJsonKey("error"))
+                .swap();
 
         return res.isRight()
                 ? new ResponseEntity<>(res.get(), HttpStatus.OK)
@@ -108,22 +85,11 @@ public class PostController {
      */
     @PostMapping("/posts/new")
     public ResponseEntity<String> submitPost(@Valid @RequestBody Post post) {
-        var objectMapper = new ObjectMapper();
-        var res = postService.addNewPost(post).map(postId -> {
-            try {
-                var jsonNode = objectMapper.createObjectNode().put("post_id", postId);
-                return objectMapper.writeValueAsString(jsonNode);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }).swap().map(error -> {
-            try {
-                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
-                return objectMapper.writeValueAsString(jsonNode);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }).swap();
+        var res = postService.addNewPost(post)
+                .map(postId -> new JsonEmitter<>(postId).emitJsonKey("post_id"))
+                .swap()
+                .map(error -> new JsonEmitter<>(error.getMessage()).emitJsonKey("error"))
+                .swap();
 
         return res.isRight()
                 ? new ResponseEntity<>(res.get(), HttpStatus.OK)
@@ -140,22 +106,20 @@ public class PostController {
     @PutMapping("/posts/{postId}")
     public ResponseEntity<String> updatePost(@Valid @RequestBody Post post, @PathVariable("postId") String postId) {
         var res = postService.updatePost(post, postId);
-        var objectMapper = new ObjectMapper();
 
         return res.map(error -> {
-            try {
-                var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
-                return new ResponseEntity<>(objectMapper.writeValueAsString(jsonNode), HttpStatus.BAD_REQUEST);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-        }).orElseGet(() -> new ResponseEntity<>("{\"status\": \"OK\"}", HttpStatus.OK));
+            var jsonOutput = new JsonEmitter<>(res.get().getMessage()).emitJsonKey("error");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
+        }).orElseGet(() -> {
+            var jsonOutput = new JsonEmitter<String>("OK").emitJsonKey("status");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
+        });
     }
 
     /**
      * Delete a post
      *
-     * @Param user the username and the password of the post owner
+     * @param user the username and the password of the post owner
      * @param postId the post ID to delete
      * @return on failure, the error message
      */
@@ -163,29 +127,18 @@ public class PostController {
     public ResponseEntity<String> deletePost(@RequestBody User user, @PathVariable("postId") String postId) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            var objectMapper = new ObjectMapper();
-            var res = "";
-            var jsonNode = objectMapper.createObjectNode().put("error", "Specify both email and password");
-            try {
-                res = objectMapper.writeValueAsString(jsonNode);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
+            var res = new JsonEmitter<>("Specify both email and password").emitJsonKey("error");
             return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
         }
 
         // Delete the post
         var res = postService.deletePost(user, postId);
         return res.map(error -> {
-            var objectMapper = new ObjectMapper();
-            var json = "";
-            var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
-            try {
-                json = objectMapper.writeValueAsString(jsonNode);
-            } catch(JsonProcessingException e) {
-                throw new RuntimeException(e.getMessage());
-            }
-            return new ResponseEntity<>(json, HttpStatus.BAD_REQUEST);
-        }).orElseGet(() -> new ResponseEntity<>("{\"status\": \"OK\"}", HttpStatus.OK));
+            var jsonOutput = new JsonEmitter<>(error.getMessage()).emitJsonKey("error");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
+        }).orElseGet(() -> {
+            var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
+        });
     }
 }

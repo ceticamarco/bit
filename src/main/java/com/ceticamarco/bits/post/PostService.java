@@ -48,7 +48,7 @@ public class PostService {
         }
 
         // Check if post is expired
-        if(post.get().getExpirationDate() != null && post.get().getExpirationDate().isBefore(LocalDate.now())) {
+        if(post.get().getExpirationDate() != null && !post.get().getExpirationDate().isAfter(LocalDate.now())) {
             return Either.left(new Error("This post has expired"));
         }
 
@@ -135,7 +135,7 @@ public class PostService {
 
         // Check if user has ownership over post
         if(!Objects.equals(user.get().getId(), post.get().getUser().getId())) {
-            return Optional.of(new Error("Cannot modify an anonymous post"));
+            return Optional.of(new Error("Cannot modify this post"));
         }
 
         // Otherwise update both title and content
