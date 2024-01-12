@@ -135,15 +135,53 @@ public class PostService {
 
         // Check if user has ownership over post
         if(!Objects.equals(user.get().getId(), post.get().getUser().getId())) {
-            return Optional.of(new Error("Cannot modify this post"));
+            return Optional.of(new Error("Cannot modify an anonymous post"));
         }
 
         // Otherwise update both title and content
         var modifiedRows = postRepository.updatePostById(req.getTitle(), req.getContent(), postId);
 
+        return modifiedRows != 1
+                ? Optional.of(new Error("Error while updating post"))
+                : Optional.empty();
+    }
+
+    @Transactional
+    Optional<Error> deletePost(User req, String postId) {
+        var post = postRepository.findById(postId);
+
+        // Check whether the post exists
+        if(post.isEmpty()) {
+            return Optional.of(new Error("Cannot find post"));
+        }
+
+        // Check whether post is anonymous
+        if(post.get().getUser() == null) {
+            return Optional.of(new Error("Cannot delete an anonymous post"));
+        }
+
+        // Check if user is registered
+        var user = userRepository.findUserByEmail(req.getEmail());
+        var rawPassword = req.getPassword();
+        if(user.isEmpty()) {
+            return Optional.of(new Error("Cannot find this user"));
+        }
+
+        // Check if credentials are correct
+        if(!passwordEncoder.matches(rawPassword, user.get().getPassword())) {
+            return Optional.of(new Error("Wrong password"));
+        }
+
+        // Check if user has ownership over post
+        if(!Objects.equals(user.get().getId(), post.get().getUser().getId())) {
+            return Optional.of(new Error("Cannot delete this post"));
+        }
+
+        // Otherwise delete the post
+        var modifiedRows = postRepository.deletePostById(postId);
 
         return modifiedRows != 1
-                ? Optional.of((new Error("Error while updating post")))
+                ? Optional.of(new Error("Error while deleting post"))
                 : Optional.empty();
     }
 }

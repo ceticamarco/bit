@@ -1,5 +1,6 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.user.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -154,11 +155,37 @@ public class PostController {
     /**
      * Delete a post
      *
+     * @Param user the username and the password of the post owner
      * @param postId the post ID to delete
      * @return on failure, the error message
      */
     @DeleteMapping("/posts/{postId}")
-    public String deletePost(@PathVariable("postId") Integer postId) {
-        return "";
+    public ResponseEntity<String> deletePost(@RequestBody User user, @PathVariable("postId") String postId) {
+        // Check if email and password are specified
+        if(user.getPassword() == null || user.getEmail() == null) {
+            var objectMapper = new ObjectMapper();
+            var res = "";
+            var jsonNode = objectMapper.createObjectNode().put("error", "Specify both email and password");
+            try {
+                res = objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+        }
+
+        // Delete the post
+        var res = postService.deletePost(user, postId);
+        return res.map(error -> {
+            var objectMapper = new ObjectMapper();
+            var json = "";
+            var jsonNode = objectMapper.createObjectNode().put("error", error.getMessage());
+            try {
+                json = objectMapper.writeValueAsString(jsonNode);
+            } catch(JsonProcessingException e) {
+                throw new RuntimeException(e.getMessage());
+            }
+            return new ResponseEntity<>(json, HttpStatus.BAD_REQUEST);
+        }).orElseGet(() -> new ResponseEntity<>("{\"status\": \"OK\"}", HttpStatus.OK));
     }
 }

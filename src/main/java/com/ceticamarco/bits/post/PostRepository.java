@@ -14,4 +14,7 @@ public interface PostRepository extends JpaRepository<Post, String> {
     @Modifying
     @Query("UPDATE Post p SET p.title = :title, p.content = :content WHERE p.id = :postId")
     int updatePostById(@Param("title") String title, @Param("content") String content, @Param("postId") String postId);
+
+    @Modifying
+    int deletePostById(String postId);
 }

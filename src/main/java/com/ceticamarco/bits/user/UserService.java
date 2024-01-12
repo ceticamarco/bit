@@ -43,7 +43,7 @@ public class UserService {
     public Optional<Error> deleteUser(User user) {
         // Search user password by its email
         var rawPassword = user.getPassword();
-        var encodedPassword = userRepository.findUserByUsername(user.getEmail());
+        var encodedPassword = userRepository.findUserByEmail(user.getEmail());
 
         // Check whether user exists
         if(encodedPassword.isEmpty()) {
@@ -56,8 +56,10 @@ public class UserService {
             return Optional.of(new Error("Wrong password"));
         }
 
-        userRepository.deleteUserByEmail(user.getEmail());
+        var modifiedRows = userRepository.deleteUserByEmail(user.getEmail());
 
-        return Optional.empty();
+        return modifiedRows != 1
+                ? Optional.of(new Error("Error while deleting user"))
+                : Optional.empty();
     }
 }
