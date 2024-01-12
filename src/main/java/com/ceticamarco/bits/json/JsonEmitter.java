@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 public class JsonEmitter<T> {
-    private ObjectMapper objectMapper;
-    private T entity;
+    private final ObjectMapper objectMapper;
+    private final T entity;
 
     public JsonEmitter(T entity) {
         // Initialize and configure object mapper
