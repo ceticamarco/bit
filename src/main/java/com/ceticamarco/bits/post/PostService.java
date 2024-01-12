@@ -27,14 +27,6 @@ public class PostService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    private boolean isUserNotRegistered(User user) {
-        var encodedPassword = userRepository.findUserByEmail(user.getEmail());
-        var rawPassword = user.getPassword();
-
-        // Return true if user email exists and the password matches
-        return encodedPassword.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty();
-    }
-
     List<Post> getPosts() {
         return postRepository.findAll().stream().map(post -> {
             if(post.getUser() != null) {
@@ -42,7 +34,9 @@ public class PostService {
                 post.getUser().setPassword(null);
             }
             return post;
-        }).collect(Collectors.toList());
+        })
+            .filter(post -> post.getExpirationDate() == null || post.getExpirationDate().isAfter(LocalDate.now()))
+            .collect(Collectors.toList());
     }
 
     Either<Error, Post> getPostById(String postId) {
@@ -51,6 +45,11 @@ public class PostService {
         // Check whether the post exists
         if(post.isEmpty()) {
             return Either.left(new Error("Cannot find post"));
+        }
+
+        // Check if post is expired
+        if(post.get().getExpirationDate() != null && post.get().getExpirationDate().isBefore(LocalDate.now())) {
+            return Either.left(new Error("This post has expired"));
         }
 
         // Conceal personal user information if available
@@ -63,17 +62,17 @@ public class PostService {
     }
 
     List<Post> getPostByTitle(String title) {
-        var postList = postRepository.findPostByTitle(title);
-
-        // Conceal user information
-        postList.forEach(post -> {
+        return postRepository.findPostByTitle(title).stream().map(post -> {
+            // Conceal user information
             if(post.getUser() != null) {
                 post.getUser().setId(null);
                 post.getUser().setPassword(null);
             }
-        });
 
-        return postList;
+            return post;
+        })
+            .filter(post -> post.getExpirationDate() == null || post.getExpirationDate().isAfter(LocalDate.now()))
+            .collect(Collectors.toList());
     }
 
     Either<Error, String> addNewPost(Post post) {
