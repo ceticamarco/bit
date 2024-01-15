@@ -19,7 +19,7 @@ public class JsonEmitter<T> {
     }
 
     public String emitJsonKey() {
-        String jsonString = "";
+        String jsonString;
 
         try {
             jsonString = objectMapper.writeValueAsString(this.entity);
@@ -31,7 +31,7 @@ public class JsonEmitter<T> {
     }
 
     public String emitJsonKey(String key) {
-        String jsonString = "";
+        String jsonString;
 
         try {
             var jsonNode = objectMapper.createObjectNode().put(key, this.entity.toString());

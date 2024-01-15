@@ -40,7 +40,7 @@ public class UserController {
      * @param user the new user
      * @return on success, the userId, on failure the error message
      */
-    @PostMapping("/users")
+    @PostMapping("/users/new")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
         var res = userService.addNewUser(user)
                 .map(userId -> new JsonEmitter<>(userId).emitJsonKey("user_id"))
@@ -59,7 +59,7 @@ public class UserController {
      * @param user the email and the password of the user
      * @return on failure, the error message
      */
-    @DeleteMapping("/users")
+    @DeleteMapping("/users/delete")
     public ResponseEntity<String> deleteUser(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
