@@ -27,7 +27,7 @@ public class PostService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    List<Post> getPosts() {
+    public List<Post> getPosts() {
         return postRepository.findAll().stream().map(post -> {
             if(post.getUser() != null) {
                 post.getUser().setId(null);
@@ -39,7 +39,7 @@ public class PostService {
             .collect(Collectors.toList());
     }
 
-    Either<Error, Post> getPostById(String postId) {
+    public Either<Error, Post> getPostById(String postId) {
         var post = postRepository.findById(postId);
 
         // Check whether the post exists
@@ -61,7 +61,7 @@ public class PostService {
         return Either.right(post.get());
     }
 
-    List<Post> getPostByTitle(String title) {
+    public  List<Post> getPostByTitle(String title) {
         return postRepository.findPostByTitle(title).stream().map(post -> {
             // Conceal user information
             if(post.getUser() != null) {
@@ -75,7 +75,7 @@ public class PostService {
             .collect(Collectors.toList());
     }
 
-    Either<Error, String> addNewPost(Post post) {
+    public Either<Error, String> addNewPost(Post post) {
         // Check whether the user email and user password are specified
         if(post.getUser() != null && post.getUser().getEmail() != null && post.getUser().getPassword() != null) {
             var user = userRepository.findUserByEmail(post.getUser().getEmail());
@@ -103,7 +103,7 @@ public class PostService {
     }
 
     @Transactional
-    Optional<Error> updatePost(Post req, String postId) {
+    public Optional<Error> updatePost(Post req, String postId) {
         var post = postRepository.findById(postId);
 
         // Check whether the post exists
@@ -147,7 +147,7 @@ public class PostService {
     }
 
     @Transactional
-    Optional<Error> deletePost(User req, String postId) {
+    public Optional<Error> deletePost(User req, String postId) {
         var post = postRepository.findById(postId);
 
         // Check whether the post exists

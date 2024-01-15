@@ -18,6 +18,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -37,7 +38,7 @@ class UserControllerTest {
 		user.setEmail("john@example.com");
 		user.setPassword("qwerty");
 
-		when(userService.addNewUser(any(User.class))).thenReturn(Either.right("userId123"));
+		when(userService.addNewUser(any(User.class))).thenReturn(Either.right(anyString()));
 
 		mockMvc.perform(MockMvcRequestBuilders.post("/users/new")
 				.contentType(MediaType.APPLICATION_JSON)

@@ -72,7 +72,7 @@ public class PostController {
      *            Without the title, it acts the same as 'GET /posts'
      * @return the list of posts
      */
-    @PostMapping("/posts")
+    @GetMapping("/posts/bytitle")
     public ResponseEntity<List<Post>> getPostByTitle(@RequestBody Post req) {
         return new ResponseEntity<>(postService.getPostByTitle(req.getTitle()), HttpStatus.OK);
     }
