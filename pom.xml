@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.ceticamarco</groupId>
 	<artifactId>bits</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>1.0.0</version>
 	<name>bits</name>
 	<description>Text storage platform</description>
 	<properties>
