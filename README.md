@@ -1,4 +1,4 @@
-# Bit ![](https://github.com/ice-bit/bit/actions/workflows/bit.yml/badge.svg)
+# Bit ![](https://github.com/ceticamarco/bit/actions/workflows/bit.yml/badge.svg)
 Bit is a simple, web-based, self-hostable text sharing platform written in Java and Spring.
 You can access it [from here](https://bt.marcocetica.com)(no frontend, yet).
 

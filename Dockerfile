@@ -17,7 +17,7 @@ ARG SPRING_DATASOURCE_USERNAME="test"
 ARG SPRING_DATASOURCE_PASSWORD="test"
 
 # Build the jar file and execute the unit tests
-RUN ./mvnw package
+RUN chmod +x mvnw && ./mvnw package
 
 # RUN STAGE
 FROM amazoncorretto:21 as run
