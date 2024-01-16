@@ -136,7 +136,7 @@ Below there are some practical examples on how to use the REST API:
 }
 ```
 
-2. **Add an anonymous post with expiration date set to January 25, 2024 **
+2. **Add an anonymous post with expiration date set to January 25, 2024**
 
 `POST` request to `/posts/new` with the following body:
 ```json
@@ -147,7 +147,7 @@ Below there are some practical examples on how to use the REST API:
 }
 ```
 
-3. **Delete post `afj45c`**
+3. **Delete post "`afj45c`"**
 
 `DELETE` request to `/posts/afj45c` with the following body:
 ```json
