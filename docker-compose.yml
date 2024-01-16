@@ -1,17 +1,17 @@
 version: "3.9"
 
 networks:
-  bits:
+  bit:
     external: false
 
 services:
   app:
     build: .
-    container_name: "bits_app"
+    container_name: "bit_app"
     environment:
       SERVER_PORT: 3000
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bits
-      SPRING_DATASOURCE_USERNAME: bitsuser
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/bit
+      SPRING_DATASOURCE_USERNAME: bituser
       SPRING_DATASOURCE_PASSWORD: qwerty1234
       SPRING_SECURITY_USER_NAME: admin
       SPRING_SECURITY_USER_PASSWORD: admin
@@ -19,19 +19,18 @@ services:
     ports:
       - "3000:3000"
     networks:
-      - bits
+      - bit
     depends_on:
       - db
-
   db:
     image: postgres:latest
-    container_name: "bits_db"
+    container_name: "bit_db"
     restart: always
     environment:
-      - POSTGRES_USER=bitsuser
+      - POSTGRES_USER=bituser
       - POSTGRES_PASSWORD=qwerty1234
-      - POSTGRES_DB=bits
+      - POSTGRES_DB=bit
     networks:
-      - bits
+      - bit
     volumes:
       - ./postgres:/var/lib/postgresql/data

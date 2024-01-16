@@ -9,7 +9,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.util.List;
 
 @Entity
-@Table(name = "bts_users")
+@Table(name = "bt_users")
 public class User {
     @Id
     @Column(name = "userID", nullable = false)

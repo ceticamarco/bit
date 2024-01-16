@@ -8,7 +8,7 @@ import org.hibernate.annotations.GenericGenerator;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "bts_posts")
+@Table(name = "bt_posts")
 public class Post {
     @Id
     @Column(name = "postID", nullable = false)
