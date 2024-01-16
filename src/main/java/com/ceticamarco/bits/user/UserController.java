@@ -13,20 +13,6 @@ import java.util.HashMap;
 
 @RestController
 public class UserController {
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public String handleValidationExceptions(MethodArgumentNotValidException ex) {
-        var errors = new HashMap<String, String>();
-
-        ex.getBindingResult().getAllErrors().forEach((e) -> {
-            var fieldName = ((FieldError) e).getField();
-            var errMessage = e.getDefaultMessage();
-            errors.put(fieldName, errMessage);
-        });
-
-        return new JsonEmitter<>(errors).emitJsonKey();
-    }
-
     private final UserService userService;
 
     @Autowired

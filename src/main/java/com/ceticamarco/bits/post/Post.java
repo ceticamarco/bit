@@ -2,6 +2,7 @@ package com.ceticamarco.bits.post;
 
 import com.ceticamarco.bits.user.User;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -31,6 +32,7 @@ public class Post {
     private LocalDate createdAt;
 
     @Column(name = "expiration_date")
+    @Future(message = "expiration date must be in the future")
     private LocalDate expirationDate;
 
     @ManyToOne
@@ -58,6 +60,4 @@ public class Post {
     public void setTitle(String title) { this.title = title; }
 
     public void setContent(String content) { this.content = content; }
-
-    public void setExpirationDate(LocalDate expirationDate) { this.expirationDate = expirationDate; }
 }

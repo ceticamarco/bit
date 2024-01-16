@@ -93,7 +93,7 @@ public class PostService {
             post.setUser(null);
         }
 
-        // Get current date in YYYY-MM-DD format
+        // Set issue date in YYYY-MM-DD format
         post.setCreatedAt(LocalDate.now());
 
         // Save the post into the database and return its ID

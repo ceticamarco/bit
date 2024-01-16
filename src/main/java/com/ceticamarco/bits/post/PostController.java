@@ -6,30 +6,12 @@ import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
 import java.util.List;
 
 @RestController
 public class PostController {
     private final PostService postService;
-
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public String handleValidationExceptions(MethodArgumentNotValidException ex) {
-        var errors = new HashMap<String, String>();
-
-        ex.getBindingResult().getAllErrors().forEach((e) -> {
-            var fieldName = ((FieldError) e).getField();
-            var errMessage = e.getDefaultMessage();
-            errors.put(fieldName, errMessage);
-        });
-
-        return new JsonEmitter<>(errors).emitJsonKey();
-    }
 
     @Autowired
     public PostController(PostService postService) {
