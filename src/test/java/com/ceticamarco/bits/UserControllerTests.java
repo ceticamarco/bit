@@ -40,7 +40,7 @@ class UserControllerTest {
 
 		when(userService.addNewUser(any(User.class))).thenReturn(Either.right(anyString()));
 
-		mockMvc.perform(MockMvcRequestBuilders.post("/users/new")
+		mockMvc.perform(MockMvcRequestBuilders.post("/api/users/new")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(user)))
 				.andExpect(MockMvcResultMatchers.status().isOk());
@@ -56,7 +56,7 @@ class UserControllerTest {
 
 		when(userService.deleteUser(any(User.class))).thenReturn(Optional.empty());
 
-		mockMvc.perform(MockMvcRequestBuilders.delete("/users/delete")
+		mockMvc.perform(MockMvcRequestBuilders.delete("/api/users/delete")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(user)))
 				.andExpect(MockMvcResultMatchers.status().isOk());

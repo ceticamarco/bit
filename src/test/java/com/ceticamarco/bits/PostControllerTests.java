@@ -44,7 +44,7 @@ public class PostControllerTests {
 
         when(postService.getPosts()).thenReturn(List.of(post));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/posts")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -62,7 +62,7 @@ public class PostControllerTests {
 
         when(postService.getPostById(anyString())).thenReturn(Either.right(any(Post.class)));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/posts/abc123")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -80,7 +80,7 @@ public class PostControllerTests {
 
         when(postService.getPostByTitle(anyString())).thenReturn(List.of(post));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/posts/bytitle")
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/bytitle")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -96,7 +96,7 @@ public class PostControllerTests {
 
         when(postService.addNewPost(any(Post.class))).thenReturn(Either.right(anyString()));
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/posts/new")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/posts/new")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -112,7 +112,7 @@ public class PostControllerTests {
 
         when(postService.updatePost(any(Post.class), anyString())).thenReturn(Optional.empty());
 
-        mockMvc.perform(MockMvcRequestBuilders.put("/posts/abc123")
+        mockMvc.perform(MockMvcRequestBuilders.put("/api/posts/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -128,7 +128,7 @@ public class PostControllerTests {
 
         when(postService.deletePost(any(User.class), anyString())).thenReturn(Optional.empty());
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/posts/abc123")
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/posts/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isOk());

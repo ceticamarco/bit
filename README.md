@@ -72,7 +72,7 @@ By default, the following parameters are used:
 Be sure to update these values by editing the`docker-compose.yml` file. Once the containers
 are deployed, you can expose the application through a reverse proxy:
 ```nginx
-location / {
+location /api {
     proxy_pass http://127.0.0.1:3000;
     proxy_set_header Host $host;
     proxy_set_header X-Real-IP $remote_addr;
@@ -84,36 +84,36 @@ location / {
 ## Endpoints
 The backend exposes the following REST APIs:
 
-### `POST` New User(`/users/new`):
+### `POST` New User(`/api/users/new`):
 _Description_: Add new user.  
 _Parameters_: **username**(`string`), **email**(`string`) **password**(`string`).
 
-### `DELETE` Delete User(`/users/delete`):
+### `DELETE` Delete User(`/api/users/delete`):
 _Description_: Delete an existing user.  
 _Parameters_: **email**(`string`) **password**(`string`).
 
-### `GET` Post List(`/posts`):
+### `GET` Post List(`/api/posts`):
 _Description_: Retrieve all users.  
 _Parameters_: none.
 
-### `GET` Post By ID(`/posts/{postID}`):
+### `GET` Post By ID(`/api/posts/{postID}`):
 _Description_: Search a post by its ID.  
 _Parameters_: none.
 
-### `GET` Post By Title(`/posts/bytitle`):
+### `GET` Post By Title(`/api/posts/bytitle`):
 _Description_: Search a post by its title.  
 _Parameters_: **title**(`string`).
 
-### `POST` New Post(`/posts/new`):
+### `POST` New Post(`/api/posts/new`):
 _Description_: Add a new post.  
 _Parameters_: **title**(`string`), **content**(`string`), **expirationDate**(`YYYY-MM-DD`),
 **user**(`User`).
 
-### `PUT` Edit Post(`/posts/{postID}`):
+### `PUT` Edit Post(`/api/posts/{postID}`):
 _Description_: Update an existing, non-anonymous post.  
 _Parameters_: **title**(`string`), **content**(`string`), **user**(`User`).
 
-### `DELETE` Delete Post(`/posts/{postID}`):
+### `DELETE` Delete Post(`/api/posts/{postID}`):
 _Description_: Delete an existing, non-anonymous post.  
 _Parameters_: **user**(`User`).
 
@@ -123,7 +123,7 @@ Below there are some practical examples on how to use the REST API:
 
 1. **Add a non-anonymous, perpetual post**(_note: the user must exist_)  
 
-`POST` request to `/posts/new` with the following body:
+`POST` request to `/api/posts/new` with the following body:
 ```json
 {
   "title": "Hello World",
@@ -138,7 +138,7 @@ Below there are some practical examples on how to use the REST API:
 
 2. **Add an anonymous post with expiration date set to January 25, 2024**
 
-`POST` request to `/posts/new` with the following body:
+`POST` request to `/api/posts/new` with the following body:
 ```json
 {
   "title": "Hello World",
@@ -149,7 +149,7 @@ Below there are some practical examples on how to use the REST API:
 
 3. **Delete post "`afj45c`"**
 
-`DELETE` request to `/posts/afj45c` with the following body:
+`DELETE` request to `/api/posts/afj45c` with the following body:
 ```json
 {
   "email": "john@example.com",
