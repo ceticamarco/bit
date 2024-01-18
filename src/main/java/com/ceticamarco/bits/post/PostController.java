@@ -23,6 +23,7 @@ public class PostController {
      *
      * @return the list of the posts
      */
+    @CrossOrigin
     @GetMapping("/api/posts")
     public ResponseEntity<List<Post>> getPosts() {
         return new ResponseEntity<>(postService.getPosts(), HttpStatus.OK);
@@ -34,6 +35,7 @@ public class PostController {
      * @param postId the ID of the requested post
      * @return the content of the post
      */
+    @CrossOrigin
     @GetMapping("/api/posts/{postId}")
     public ResponseEntity<String> getPostById(@PathVariable("postId") String postId) {
         var res = postService.getPostById(postId)
@@ -54,6 +56,7 @@ public class PostController {
      *            Without the title, it acts the same as 'GET /posts'
      * @return the list of posts
      */
+    @CrossOrigin
     @GetMapping("/api/posts/bytitle")
     public ResponseEntity<List<Post>> getPostByTitle(@RequestBody Post req) {
         return new ResponseEntity<>(postService.getPostByTitle(req.getTitle()), HttpStatus.OK);
@@ -65,6 +68,7 @@ public class PostController {
      * @param post the new post to be submitted
      * @return on success the new postId, on failure the error message
      */
+    @CrossOrigin
     @PostMapping("/api/posts/new")
     public ResponseEntity<String> submitPost(@Valid @RequestBody Post post) {
         var res = postService.addNewPost(post)
@@ -85,6 +89,7 @@ public class PostController {
      * @param postId the id of the post to update
      * @return on failure, the error message.
      */
+    @CrossOrigin
     @PutMapping("/api/posts/{postId}")
     public ResponseEntity<String> updatePost(@Valid @RequestBody Post post, @PathVariable("postId") String postId) {
         var res = postService.updatePost(post, postId);
@@ -105,6 +110,7 @@ public class PostController {
      * @param postId the post ID to delete
      * @return on failure, the error message
      */
+    @CrossOrigin
     @DeleteMapping("/api/posts/{postId}")
     public ResponseEntity<String> deletePost(@RequestBody User user, @PathVariable("postId") String postId) {
         // Check if email and password are specified
