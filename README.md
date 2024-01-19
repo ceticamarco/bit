@@ -1,6 +1,8 @@
 # Bit ![](https://github.com/ceticamarco/bit/actions/workflows/bit.yml/badge.svg)
 Bit is a simple, web-based, self-hostable text sharing platform written in Java and Spring.
-You can access it [from here](https://bt.marcocetica.com)(no frontend, yet).
+You can access it [from here](https://bit.marcocetica.com).
+
+The frontend is also open-source and it's available [on this page](https://github.com/ceticamarco/bit_frontend).
 
 ## General
 **Bit** can be used both from the frontend(not yet available) and through the REST API.

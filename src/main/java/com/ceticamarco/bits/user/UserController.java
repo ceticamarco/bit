@@ -22,7 +22,6 @@ public class UserController {
      * @param user the new user
      * @return on success, the userId, on failure the error message
      */
-    @CrossOrigin
     @PostMapping("/api/users/new")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
         var res = userService.addNewUser(user)
@@ -42,7 +41,6 @@ public class UserController {
      * @param user the email and the password of the user
      * @return on failure, the error message
      */
-    @CrossOrigin
     @DeleteMapping("/api/users/delete")
     public ResponseEntity<String> deleteUser(@RequestBody User user) {
         // Check if email and password are specified
