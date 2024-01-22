@@ -40,7 +40,6 @@ public class PostControllerTests {
         post.setId("abc123");
         post.setTitle("test");
         post.setContent("This is a test");
-        post.setCreatedAt(LocalDate.now());
 
         when(postService.getPosts()).thenReturn(List.of(post));
 
@@ -58,7 +57,6 @@ public class PostControllerTests {
         post.setId("abc123");
         post.setTitle("test");
         post.setContent("This is a test");
-        post.setCreatedAt(LocalDate.now());
 
         when(postService.getPostById(anyString())).thenReturn(Either.right(any(Post.class)));
 
@@ -76,7 +74,6 @@ public class PostControllerTests {
         post.setId("abc123");
         post.setTitle("test");
         post.setContent("This is a test");
-        post.setCreatedAt(LocalDate.now());
 
         when(postService.getPostByTitle(anyString())).thenReturn(List.of(post));
 

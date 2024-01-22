@@ -93,9 +93,6 @@ public class PostService {
             post.setUser(null);
         }
 
-        // Set issue date in YYYY-MM-DD format
-        post.setCreatedAt(LocalDate.now());
-
         // Save the post into the database and return its ID
         var postId = postRepository.save(post).getId();
 

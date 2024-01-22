@@ -4,15 +4,17 @@ import com.ceticamarco.bits.customGenerator.CustomUUID;
 import com.ceticamarco.bits.post.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Entity
 @Table(name = "bt_users")
 public class User {
     @Id
-    @Column(name = "userID", nullable = false)
+    @Column(name = "userID", nullable = false, updatable = false)
     @GeneratedValue(generator = "customUUID")
     @GenericGenerator(
             name = "customUUID",
@@ -31,6 +33,10 @@ public class User {
     @NotEmpty(message = "password cannot be empty")
     @Column(name = "password", nullable = false)
     private String password;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDate createdAt;
 
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Post> post;

@@ -4,6 +4,7 @@ import com.ceticamarco.bits.user.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
@@ -12,7 +13,7 @@ import java.time.LocalDate;
 @Table(name = "bt_posts")
 public class Post {
     @Id
-    @Column(name = "postID", nullable = false)
+    @Column(name = "postID", nullable = false, updatable = false)
     @GeneratedValue(generator = "customUUID")
     @GenericGenerator(
             name = "customUUID",
@@ -28,7 +29,8 @@ public class Post {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDate createdAt;
 
     @Column(name = "expiration_date")
@@ -52,8 +54,6 @@ public class Post {
     public User getUser() { return this.user; }
 
     public void setUser(User user) { this.user = user; }
-
-    public void setCreatedAt(LocalDate date) { this.createdAt = date; }
 
     public void setId(String id) { this.id = id; }
 
