@@ -41,14 +41,18 @@ public class PostControllerTests {
         post.setTitle("test");
         post.setContent("This is a test");
 
-        when(postService.getPosts()).thenReturn(List.of(post));
+        var user = new User();
+        user.setEmail("john@example.com");
+        user.setPassword("qwerty");
+
+        when(postService.getPosts(any(User.class))).thenReturn(Either.right(List.of(post)));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(post)))
+                .content(objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(postService, Mockito.times(1)).getPosts();
+        Mockito.verify(postService, Mockito.times(1)).getPosts(any(User.class));
     }
 
     @Test
@@ -71,18 +75,22 @@ public class PostControllerTests {
     @Test
     public void getPostByTitle() throws Exception {
         var post = new Post();
+        var user = new User();
+        user.setEmail("john@example.com");
+        user.setPassword("qwerty");
         post.setId("abc123");
         post.setTitle("test");
         post.setContent("This is a test");
+        post.setUser(user);
 
-        when(postService.getPostByTitle(anyString())).thenReturn(List.of(post));
+        when(postService.getPostByTitle(any(Post.class))).thenReturn(Either.right(List.of(post)));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/bytitle")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
-        Mockito.verify(postService, Mockito.times(1)).getPostByTitle(anyString());
+        Mockito.verify(postService, Mockito.times(1)).getPostByTitle(any(Post.class));
     }
 
     @Test

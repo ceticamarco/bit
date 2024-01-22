@@ -1,5 +1,6 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.exception.GenericErrorException;
 import com.ceticamarco.bits.exception.UnauthorizedUserException;
 import com.ceticamarco.bits.json.JsonEmitter;
 import com.ceticamarco.bits.user.User;
@@ -28,14 +29,14 @@ public class PostController {
     public ResponseEntity<List<Post>> getPosts(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            throw new UnauthorizedUserException("Specify both email and password");
+            throw new GenericErrorException("Specify both email and password", "error");
         }
 
         // Get post list
         var res = postService.getPosts(user);
 
         // Check if user is authorized
-        if(res.isLeft()) { // TODO: implement proper generic exception handler
+        if(res.isLeft()) {
             throw new UnauthorizedUserException(res.getLeft().getMessage());
         }
 
@@ -50,15 +51,13 @@ public class PostController {
      */
     @GetMapping("/api/posts/{postId}")
     public ResponseEntity<String> getPostById(@PathVariable("postId") String postId) {
-        var res = postService.getPostById(postId)
-                .map(post -> new JsonEmitter<>(post).emitJsonKey())
-                .swap()
-                .map(error -> new JsonEmitter<>(error.getMessage()).emitJsonKey("error"))
-                .swap();
+        var res = postService.getPostById(postId);
+        if(res.isLeft()) {
+            throw new GenericErrorException(res.getLeft().getMessage(), "error");
+        }
 
-        return res.isRight()
-                ? new ResponseEntity<>(res.get(), HttpStatus.OK)
-                :  new ResponseEntity<>(res.getLeft(), HttpStatus.BAD_REQUEST);
+        var jsonOutput = new JsonEmitter<>(res.get()).emitJsonKey();
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 
     /**
@@ -72,14 +71,14 @@ public class PostController {
     public ResponseEntity<List<Post>> getPostByTitle(@RequestBody Post req) {
         // Check if email and password are specified
         if(req.getUser() == null || req.getUser().getPassword() == null || req.getUser().getEmail() == null) {
-            throw new UnauthorizedUserException("Specify both email and password");
+            throw new GenericErrorException("Specify both email and password", "error");
         }
 
         // Get post by title
         var res = postService.getPostByTitle(req);
 
         // Check if user is authorized
-        if(res.isLeft()) { // TODO: implement proper generic exception handler
+        if(res.isLeft()) {
             throw new UnauthorizedUserException(res.getLeft().getMessage());
         }
 
@@ -94,15 +93,13 @@ public class PostController {
      */
     @PostMapping("/api/posts/new")
     public ResponseEntity<String> submitPost(@Valid @RequestBody Post post) {
-        var res = postService.addNewPost(post)
-                .map(postId -> new JsonEmitter<>(postId).emitJsonKey("post_id"))
-                .swap()
-                .map(error -> new JsonEmitter<>(error.getMessage()).emitJsonKey("error"))
-                .swap();
+        var res =postService.addNewPost(post);
+        if(res.isLeft()) {
+            throw new GenericErrorException(res.getLeft().getMessage(), "error");
+        }
 
-        return res.isRight()
-                ? new ResponseEntity<>(res.get(), HttpStatus.OK)
-                :  new ResponseEntity<>(res.getLeft(), HttpStatus.BAD_REQUEST);
+        var jsonOutput = new JsonEmitter<>(res.get()).emitJsonKey("post_id");
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 
     /**
@@ -114,15 +111,14 @@ public class PostController {
      */
     @PutMapping("/api/posts/{postId}")
     public ResponseEntity<String> updatePost(@Valid @RequestBody Post post, @PathVariable("postId") String postId) {
+        // Update post
         var res = postService.updatePost(post, postId);
+        if(res.isPresent()) {
+            throw new GenericErrorException(res.get().getMessage(), "error");
+        }
 
-        return res.map(error -> {
-            var jsonOutput = new JsonEmitter<>(res.get().getMessage()).emitJsonKey("error");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
-        }).orElseGet(() -> {
-            var jsonOutput = new JsonEmitter<String>("OK").emitJsonKey("status");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
-        });
+        var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 
     /**
@@ -142,12 +138,11 @@ public class PostController {
 
         // Delete the post
         var res = postService.deletePost(user, postId);
-        return res.map(error -> {
-            var jsonOutput = new JsonEmitter<>(error.getMessage()).emitJsonKey("error");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
-        }).orElseGet(() -> {
-            var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
-        });
+        if(res.isPresent()) {
+            throw new GenericErrorException(res.get().getMessage(), "error");
+        }
+
+        var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 }

@@ -15,6 +15,14 @@ import java.util.HashMap;
 @ControllerAdvice
 public class CustomExceptionsHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(GenericErrorException.class)
+    public ResponseEntity<String> genericErrorException(GenericErrorException ex) {
+        var error = new JsonEmitter<>(ex.getMessage()).emitJsonKey(ex.getKey());
+
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<String> handleValidationExceptions(MethodArgumentNotValidException ex) {
         var errors = new HashMap<String, String>();

@@ -1,5 +1,6 @@
 package com.ceticamarco.bits.user;
 
+import com.ceticamarco.bits.exception.GenericErrorException;
 import com.ceticamarco.bits.exception.UnauthorizedUserException;
 import com.ceticamarco.bits.json.JsonEmitter;
 import jakarta.validation.Valid;
@@ -29,14 +30,14 @@ public class UserController {
     public ResponseEntity<List<User>> getUsers(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            throw new UnauthorizedUserException("Specify both email and password");
+            throw new GenericErrorException("Specify both email and password", "error");
         }
 
         // Get post list
         var res = userService.getUsers(user);
 
         // Check if user is authorized
-        if(res.isLeft()) { // TODO: implement proper generic exception handler
+        if(res.isLeft()) {
             throw new UnauthorizedUserException(res.getLeft().getMessage());
         }
 
@@ -51,15 +52,13 @@ public class UserController {
      */
     @PostMapping("/api/users/new")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
-        var res = userService.addNewUser(user)
-                .map(userId -> new JsonEmitter<>(userId).emitJsonKey("user_id"))
-                .swap()
-                .map(error -> new JsonEmitter<>(error.getMessage()).emitJsonKey("error"))
-                .swap();
+        var res = userService.addNewUser(user);
+        if(res.isLeft()) {
+            throw new GenericErrorException(res.getLeft().getMessage(), "error");
+        }
 
-        return res.isRight()
-                ? new ResponseEntity<>(res.get(), HttpStatus.OK)
-                : new ResponseEntity<>(res.getLeft(), HttpStatus.BAD_REQUEST);
+        var jsonOutput = new JsonEmitter<>(res.get()).emitJsonKey("user_id");
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 
     /**
@@ -72,17 +71,15 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            var res = new JsonEmitter<>("Specify both email and password").emitJsonKey("error");
-            return new ResponseEntity<>(res, HttpStatus.BAD_REQUEST);
+            throw new GenericErrorException("Specify both email and password", "error");
         }
         // Delete the user
         var res = userService.deleteUser(user);
-        return res.map(error -> {
-            var jsonOutput = new JsonEmitter<>(error.getMessage()).emitJsonKey("error");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
-        }).orElseGet(() -> {
-            var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
-            return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
-        });
+        if(res.isPresent()) {
+            throw new GenericErrorException(res.get().getMessage(), "error");
+        }
+
+        var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 }

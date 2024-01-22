@@ -15,6 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -30,6 +31,23 @@ class UserControllerTest {
     private ObjectMapper objectMapper;
     @MockBean
     private UserService userService;
+
+    @Test
+    public void getUsers() throws Exception {
+        var user = new User();
+        user.setUsername("john");
+        user.setEmail("john@example.com");
+        user.setPassword("qwerty");
+
+        when(userService.getUsers(any(User.class))).thenReturn(Either.right(List.of(user)));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(user)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        Mockito.verify(userService, Mockito.times(1)).getUsers(any(User.class));
+    }
 
     @Test
     public void addNewUser() throws Exception {
