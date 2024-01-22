@@ -5,7 +5,7 @@ You can access it [from here](https://bit.marcocetica.com).
 The frontend is also open-source and it's available [on this page](https://github.com/ceticamarco/bit_frontend).
 
 ## General
-**Bit** can be used both from the frontend(not yet available) and through the REST API.
+**Bit** can be used both from the [frontend](https://bit.marcocetica.com) and through the REST API.
 Before using it, read the following technical notices:
 
 1. By default, each new _"text"_(from now on: **post**) added to the platform is anonymous and does not expire.
@@ -14,21 +14,27 @@ The registration process requires a unique **username**, a unique **email addres
 User accounts can **NOT** be modified or recovered; therefore if you lose your password, you will need
 to create a new account using a new email address.
 
-2. Posts published with a valid user identity can be altered or deleted. In order to do that, you
+2. Each user account is associated with a _user role_ that determines the granular access
+to the _special_ endpoints. The _user role_ is set by default to **unprivileged** at registration
+time and can be altered only by manually modifying the database.
+
+3. Special endpoints are only accessible to the **privileged** user class.
+
+4. Posts published with a valid user identity can be altered or deleted. In order to do that, you
 need to authenticate yourself with your credentials within the update/delete request. Anonymous
 posts, on the other hand, can **NOT** be altered or removed; if you think that a certain content
 goes against the terms of service, you can email the owner of the **bit** instance.
 
-3. The expiration date controls whether the post can be showed or not, once the current date
+5. The expiration date controls whether the post can be showed or not, once the current date
 is greater or equal than the expiration date, the post is classified as **expired** and thus
 shall not be showed. Expired posts are **NOT** deleted but may be manually removed by the
 instance owner.
 
-4. The **bit** platform is _stateless_, hence there is no such thing as user session. Every time
+6. The **bit** platform is _stateless_, hence there is no such thing as user session. Every time
 you need to use your user account for a certain operation(e.g., create a new post with an identity
 or delete an existing, non-anonymous post) you will need to provide your user credentials.
 
-5. Deleting an existing user, will result in a [cascade delete](https://learn.microsoft.com/en-us/ef/core/saving/cascade-delete#:~:text=Cascading%20deletes%20are%20needed%20when%20a%20dependent/child%20entity%20can%20no%20longer%20be%20associated%20with%20its%20current%20principal/parent.%20This%20can%20happen%20because%20the%20principal/parent%20is%20deleted%2C%20or%20it%20can%20happen%20when%20the%20principal/parent%20still%20exists%20but%20the%20dependent/child%20is%20no%20longer%20associated%20with%20it.)
+7. Deleting an existing user, will result in a [cascade delete](https://learn.microsoft.com/en-us/ef/core/saving/cascade-delete#:~:text=Cascading%20deletes%20are%20needed%20when%20a%20dependent/child%20entity%20can%20no%20longer%20be%20associated%20with%20its%20current%20principal/parent.%20This%20can%20happen%20because%20the%20principal/parent%20is%20deleted%2C%20or%20it%20can%20happen%20when%20the%20principal/parent%20still%20exists%20but%20the%20dependent/child%20is%20no%20longer%20associated%20with%20it.)
 of any existing post associated with that user.
 
 ## Database
@@ -36,22 +42,25 @@ New posts are stored on a relational database(PostgreSQL) using the Spring ORM s
 The architecture of the bit platform consists of two tables: **bt_users** and **bt_posts**.
 The former stores the user accounts, and it's defined as follows:
 
-| Column   | Data Type | Nullable |
-|----------|-----------|----------|
-| user ID  | `String`  | `false`  |
-| email    | `String`  | `false`  |
-| password | `BCrypt`  | `false`  |
-| username | `String`  | `false`  |
+| Column     | Data Type         | Nullable |
+|------------|-------------------|----------|
+| user ID    | `String`          | `false`  |
+| created at | `YYYY-MM-DD Date` | `false`  |
+| email      | `String`          | `false`  |
+| password   | `BCrypt`          | `false`  |
+| role       | `UserRole`        | `false`  |  
+| username   | `String`          | `false`  |
 
 The latter, instead, stores the posts, and it's defined as follows:
 
-| Column          | Data Type               | Nullable |
-|-----------------|-------------------------|----------|
-| post ID         | `String`                | `false`  |
-| content         | `String`                | `false`  |
-| creation date   | `YYYY-MM-DD date`       | `false`  |
-| expiration date | `YYYY-MM-DD date`       | `true`   |
-| user ID         | `Foreign key constrain` | `true`   |
+| Column          | Data Type               | Nullable  |
+|-----------------|-------------------------|-----------|
+| post ID         | `String`                | `false`   |
+| content         | `String`                | `false`   |
+| created at      | `YYYY-MM-DD date`       | `false`   |
+| expiration date | `YYYY-MM-DD date`       | `true`    |
+| title           | `String`                | `false`   |
+| user ID         | `Foreign key constrain` | `true`    |
 
 The user password is stored using a `BCrypt` based hash. Each post can be associated with one 
 user(eventually zero) while each user can be associate with multiple posts(eventually zero).
@@ -94,17 +103,24 @@ _Parameters_: **username**(`string`), **email**(`string`) **password**(`string`)
 _Description_: Delete an existing user.  
 _Parameters_: **email**(`string`) **password**(`string`).
 
-### `GET` Post List(`/api/posts`):
+### `GET` User List(`/api/users`):
+**(special endpoint)**  
 _Description_: Retrieve all users.  
-_Parameters_: none.
+_Parameters_: **email**(`string`), **password**(`string`).
+
+### `GET` Post List(`/api/posts`):
+**(special endpoint)**  
+_Description_: Retrieve all posts.  
+_Parameters_: **email**(`string`), **password**(`string`).
 
 ### `GET` Post By ID(`/api/posts/{postID}`):
 _Description_: Search a post by its ID.  
 _Parameters_: none.
 
 ### `GET` Post By Title(`/api/posts/bytitle`):
+**(special endpoint)**  
 _Description_: Search a post by its title.  
-_Parameters_: **title**(`string`).
+_Parameters_: **title**(`string`), **user**(`User`).
 
 ### `POST` New Post(`/api/posts/new`):
 _Description_: Add a new post.  
@@ -158,6 +174,21 @@ Below there are some practical examples on how to use the REST API:
   "password": "very_bad_pw"
 }
 ```
+
+4. **Get list of all post whose title is "`foo`"**
+
+`GET` request to `/api/posts/bytitle` with the following body:
+```json
+{
+  "title": "foo",
+  "user": {
+    "email": "john@example.com",
+    "password": "very_bad_pw"
+  }
+}
+```
+
+In this case user `john@example.com` is an user of the class `PRIVILEGED`.
 
 ## Unit tests
 The **bit** platform provides some unit tests for the _post_ and the _user_ controllers. You can
