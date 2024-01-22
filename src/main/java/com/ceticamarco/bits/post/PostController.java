@@ -1,5 +1,6 @@
 package com.ceticamarco.bits.post;
 
+import com.ceticamarco.bits.exception.UnauthorizedUserException;
 import com.ceticamarco.bits.json.JsonEmitter;
 import com.ceticamarco.bits.user.User;
 import jakarta.validation.Valid;
@@ -19,13 +20,26 @@ public class PostController {
     }
 
     /**
-     * Get the list of all posts
+     * Get the list of all posts if user is PRIVILEGED
      *
      * @return the list of the posts
      */
     @GetMapping("/api/posts")
-    public ResponseEntity<List<Post>> getPosts() {
-        return new ResponseEntity<>(postService.getPosts(), HttpStatus.OK);
+    public ResponseEntity<List<Post>> getPosts(@RequestBody User user) {
+        // Check if email and password are specified
+        if(user.getPassword() == null || user.getEmail() == null) {
+            throw new UnauthorizedUserException("Specify both email and password");
+        }
+
+        // Get post list
+        var res = postService.getPosts(user);
+
+        // Check if user is authorized
+        if(res.isLeft()) { // TODO: implement proper generic exception handler
+            throw new UnauthorizedUserException(res.getLeft().getMessage());
+        }
+
+        return new ResponseEntity<>(res.get(), HttpStatus.OK);
     }
 
     /**
@@ -48,7 +62,7 @@ public class PostController {
     }
 
     /**
-     * Get posts by title
+     * Get posts by title if user is PRIVILEGED
      *
      * @param req the body contains the title.
      *            Without the title, it acts the same as 'GET /posts'
@@ -56,7 +70,20 @@ public class PostController {
      */
     @GetMapping("/api/posts/bytitle")
     public ResponseEntity<List<Post>> getPostByTitle(@RequestBody Post req) {
-        return new ResponseEntity<>(postService.getPostByTitle(req.getTitle()), HttpStatus.OK);
+        // Check if email and password are specified
+        if(req.getUser() == null || req.getUser().getPassword() == null || req.getUser().getEmail() == null) {
+            throw new UnauthorizedUserException("Specify both email and password");
+        }
+
+        // Get post by title
+        var res = postService.getPostByTitle(req);
+
+        // Check if user is authorized
+        if(res.isLeft()) { // TODO: implement proper generic exception handler
+            throw new UnauthorizedUserException(res.getLeft().getMessage());
+        }
+
+        return new ResponseEntity<>(res.get(), HttpStatus.OK);
     }
 
     /**

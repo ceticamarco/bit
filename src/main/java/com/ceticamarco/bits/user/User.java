@@ -13,6 +13,11 @@ import java.util.List;
 @Entity
 @Table(name = "bt_users")
 public class User {
+    public enum UserRole {
+        PRIVILEGED,
+        UNPRIVILEGED
+    }
+
     @Id
     @Column(name = "userID", nullable = false, updatable = false)
     @GeneratedValue(generator = "customUUID")
@@ -38,6 +43,9 @@ public class User {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDate createdAt;
 
+    @Column(name = "role", nullable = false)
+    private UserRole role;
+
     @OneToMany(mappedBy = "user", orphanRemoval = true, cascade = CascadeType.ALL)
     private List<Post> post;
 
@@ -51,6 +59,8 @@ public class User {
 
     public String getPassword() { return this.password; }
 
+    public UserRole getRole() { return this.role; }
+
     public void setPassword(String password) { this.password = password; }
 
     public void setId(String id) { this.id = id; }
@@ -58,4 +68,6 @@ public class User {
     public void setUsername(String username) { this.username = username; }
 
     public void setEmail(String email) { this.email = email; }
+
+    public void setRole(UserRole userRole) { this.role = userRole; }
 }

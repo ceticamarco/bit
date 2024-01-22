@@ -1,11 +1,14 @@
 package com.ceticamarco.bits.user;
 
+import com.ceticamarco.bits.exception.UnauthorizedUserException;
 import com.ceticamarco.bits.json.JsonEmitter;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 public class UserController {
@@ -14,6 +17,30 @@ public class UserController {
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+    /**
+     * Get all users if user is PRIVILEGED
+     *
+     * @Param user the email and the password
+     * @return on success, the list of users, on failure the error message
+     */
+    @GetMapping("/api/users")
+    public ResponseEntity<List<User>> getUsers(@RequestBody User user) {
+        // Check if email and password are specified
+        if(user.getPassword() == null || user.getEmail() == null) {
+            throw new UnauthorizedUserException("Specify both email and password");
+        }
+
+        // Get post list
+        var res = userService.getUsers(user);
+
+        // Check if user is authorized
+        if(res.isLeft()) { // TODO: implement proper generic exception handler
+            throw new UnauthorizedUserException(res.getLeft().getMessage());
+        }
+
+        return new ResponseEntity<>(res.get(), HttpStatus.OK);
     }
 
     /**

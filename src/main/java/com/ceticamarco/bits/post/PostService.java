@@ -20,6 +20,19 @@ public class PostService {
     private final PostRepository postRepository;
     private final PasswordEncoder passwordEncoder;
 
+    private boolean isUserAuthorized(User user) {
+        var userSearch = userRepository.findUserByEmail(user.getEmail());
+        var rawPassword = user.getPassword();
+
+        // Check whether user exists and whether its password is correct
+        if(userSearch.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty()) {
+            return false;
+        }
+
+        // Check whether user is authorized
+        return userSearch.get().getRole() == User.UserRole.PRIVILEGED;
+    }
+
     @Autowired
     public PostService(UserRepository userRepository, PostRepository postRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -27,8 +40,14 @@ public class PostService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    public List<Post> getPosts() {
-        return postRepository.findAll().stream().map(post -> {
+    public Either<Error, List<Post>> getPosts(User user) {
+        // Check if user exists, credentials are correct and the role is 'PRIVILEGED'
+        if(!isUserAuthorized(user)) {
+            return Either.left(new Error("Wrong credentials or insufficient privileges"));
+        }
+
+        // Otherwise, retrieve all posts and filter out expired one
+        return Either.right(postRepository.findAll().stream().map(post -> {
             if(post.getUser() != null) {
                 post.getUser().setId(null);
                 post.getUser().setPassword(null);
@@ -36,7 +55,7 @@ public class PostService {
             return post;
         })
             .filter(post -> post.getExpirationDate() == null || post.getExpirationDate().isAfter(LocalDate.now()))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
     }
 
     public Either<Error, Post> getPostById(String postId) {
@@ -61,18 +80,24 @@ public class PostService {
         return Either.right(post.get());
     }
 
-    public  List<Post> getPostByTitle(String title) {
-        return postRepository.findPostByTitle(title).stream().map(post -> {
+    public Either<Error, List<Post>> getPostByTitle(Post post) {
+        // Check if user exists, credentials are correct and the role is 'PRIVILEGED'
+        if(!isUserAuthorized(post.getUser())) {
+            return Either.left(new Error("Wrong credentials or insufficient privileges"));
+        }
+
+        // Otherwise, retrieve all posts by title and filter out expired one
+        return Either.right(postRepository.findPostByTitle(post.getTitle()).stream().map(p -> {
             // Conceal user information
-            if(post.getUser() != null) {
-                post.getUser().setId(null);
-                post.getUser().setPassword(null);
+            if(p.getUser() != null) {
+                p.getUser().setId(null);
+                p.getUser().setPassword(null);
             }
 
-            return post;
+            return p;
         })
-            .filter(post -> post.getExpirationDate() == null || post.getExpirationDate().isAfter(LocalDate.now()))
-            .collect(Collectors.toList());
+            .filter(p -> p.getExpirationDate() == null || p.getExpirationDate().isAfter(LocalDate.now()))
+            .collect(Collectors.toList()));
     }
 
     public Either<Error, String> addNewPost(Post post) {
@@ -85,9 +110,8 @@ public class PostService {
             if(user.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty()) {
                 return Either.left(new Error("Wrong email or password"));
             }
-            // Retrieve the user by its email
-            var fetchedUser = userRepository.findUserByEmail(post.getUser().getEmail());
-            fetchedUser.ifPresent(post::setUser);
+            // Finally, link the user to the post
+            user.ifPresent(post::setUser);
         } else {
             // Otherwise save the post without user information(i.e., anonymously)
             post.setUser(null);
