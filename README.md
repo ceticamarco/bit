@@ -2,17 +2,17 @@
 Bit is a simple, web-based, self-hostable text sharing platform written in Java and Spring.
 You can access it [from here](https://bit.marcocetica.com).
 
-The frontend is also open-source and it's available [on this page](https://github.com/ceticamarco/bit_frontend).
+The frontend is also open-source, and it's available [on this page](https://github.com/ceticamarco/bit_frontend).
 
 ## General
 **Bit** can be used both from the [frontend](https://bit.marcocetica.com) and through the REST API.
 Before using it, read the following technical notices:
 
-1. By default, each new _"text"_(from now on: **post**) added to the platform is anonymous and does not expire.
-In order to associate a new post to an identity, you first need to register a new user account. 
-The registration process requires a unique **username**, a unique **email address** and a **password**.
-User accounts can **NOT** be modified or recovered; therefore if you lose your password, you will need
-to create a new account using a new email address.
+1. By default, each new _"text"_(from now on: **post**) added to the platform 
+is anonymous and expires after one week. In order to associate a new post to an identity, 
+you first need to register a new user account. The registration process requires a unique **username**, 
+a unique **email address** and a **password**. User accounts can **NOT** be modified or recovered; 
+therefore if you lose your password, you will need to create a new account using a new email address.
 
 2. Each user account is associated with a _user role_ that determines the granular access
 to the _special_ endpoints. The _user role_ is set by default to **unprivileged** at registration
@@ -188,7 +188,7 @@ Below there are some practical examples on how to use the REST API:
 }
 ```
 
-In this case user `john@example.com` is an user of the class `PRIVILEGED`.
+In this case user `john@example.com` is a user of the class `PRIVILEGED`.
 
 ## Unit tests
 The **bit** platform provides some unit tests for the _post_ and the _user_ controllers. You can

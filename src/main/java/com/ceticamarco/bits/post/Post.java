@@ -33,7 +33,7 @@ public class Post {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDate createdAt;
 
-    @Column(name = "expiration_date")
+    @Column(name = "expiration_date", nullable = false)
     @Future(message = "expiration date must be in the future")
     private LocalDate expirationDate;
 
@@ -60,4 +60,6 @@ public class Post {
     public void setTitle(String title) { this.title = title; }
 
     public void setContent(String content) { this.content = content; }
+
+    public void setExpirationDate(LocalDate expirationDate) { this.expirationDate = expirationDate; }
 }

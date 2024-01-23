@@ -117,6 +117,17 @@ public class PostService {
             post.setUser(null);
         }
 
+        // If expiration date is not specified, set it to one week from now
+        if(post.getExpirationDate() == null) {
+            var currentDate = LocalDate.now();
+            post.setExpirationDate(currentDate.plusWeeks(1));
+        }
+
+        // Discard posts with expiration date greater than the current year
+        if(post.getExpirationDate().getYear() > LocalDate.now().getYear()) {
+            return Either.left(new Error("expiration date must be within this year"));
+        }
+
         // Save the post into the database and return its ID
         var postId = postRepository.save(post).getId();
 
