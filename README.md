@@ -37,6 +37,9 @@ or delete an existing, non-anonymous post) you will need to provide your user cr
 7. Deleting an existing user, will result in a [cascade delete](https://learn.microsoft.com/en-us/ef/core/saving/cascade-delete#:~:text=Cascading%20deletes%20are%20needed%20when%20a%20dependent/child%20entity%20can%20no%20longer%20be%20associated%20with%20its%20current%20principal/parent.%20This%20can%20happen%20because%20the%20principal/parent%20is%20deleted%2C%20or%20it%20can%20happen%20when%20the%20principal/parent%20still%20exists%20but%20the%20dependent/child%20is%20no%20longer%20associated%20with%20it.)
 of any existing post associated with that user.
 
+8. User signup can be disabled by setting the environment variable `BIT_DISABLE_SIGNUP` to `1`.
+By default, user registration is enabled(see `docker-compose.yml`).
+
 ## Database
 New posts are stored on a relational database(PostgreSQL) using the Spring ORM system(Hibernate).
 The architecture of the bit platform consists of two tables: **bt_users** and **bt_posts**.

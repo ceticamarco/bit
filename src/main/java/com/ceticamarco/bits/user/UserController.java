@@ -10,10 +10,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 public class UserController {
     private final UserService userService;
+
+    /**
+     * Check if user registration is disabled or not by reading the
+     * 'BIT_DISABLE_SIGNUP' environment variable.
+     *
+     * @return true if 'BIT_DISABLE_SIGNUP' is equal to 1, false otherwise
+     */
+    private boolean isSignupDisabled() {
+        var env_var = System.getenv("BIT_DISABLE_SIGNUP");
+
+        return Objects.equals(env_var, "1");
+    }
 
     @Autowired
     public UserController(UserService userService) {
@@ -52,6 +65,11 @@ public class UserController {
      */
     @PostMapping("/api/users/new")
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
+        // Check if user registration is disabled
+        if(isSignupDisabled()) {
+            throw new GenericErrorException("Registration is disabled", "error");
+        }
+
         var res = userService.addNewUser(user);
         if(res.isLeft()) {
             throw new GenericErrorException(res.getLeft().getMessage(), "error");
