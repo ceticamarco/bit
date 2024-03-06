@@ -61,6 +61,25 @@ public class PostController {
     }
 
     /**
+     * Get post content by ID
+     *
+     * @param postId the ID of the requested post
+     * @return the content of the post(raw)
+     */
+    @GetMapping("/api/posts/raw/{postId}")
+    public ResponseEntity<String> getPostContentById(@PathVariable("postId") String postId) {
+        var res = postService.getPostById(postId);
+        if(res.isLeft()) {
+            throw new GenericErrorException(res.getLeft().getMessage(), "error");
+        }
+
+        var content = res.get().getContent();
+        var jsonOutput = new JsonEmitter<>(content).emitJsonKey();
+
+        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
+    }
+
+    /**
      * Get posts by title if user is PRIVILEGED
      *
      * @param req the body contains the title.

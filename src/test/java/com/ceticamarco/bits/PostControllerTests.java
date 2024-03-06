@@ -62,9 +62,26 @@ public class PostControllerTests {
         post.setTitle("test");
         post.setContent("This is a test");
 
-        when(postService.getPostById(anyString())).thenReturn(Either.right(any(Post.class)));
+        when(postService.getPostById(anyString())).thenReturn(Either.right(post));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/abc123")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(post)))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+
+        Mockito.verify(postService, Mockito.times(1)).getPostById(anyString());
+    }
+
+    @Test
+    public void getPostContentById() throws Exception {
+        var post = new Post();
+        post.setId("abc123");
+        post.setTitle("test");
+        post.setContent("This is a test");
+
+        when(postService.getPostById(anyString())).thenReturn(Either.right(post));
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/raw/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());

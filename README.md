@@ -120,6 +120,10 @@ _Parameters_: **email**(`string`), **password**(`string`).
 _Description_: Search a post by its ID.  
 _Parameters_: none.
 
+### `GET` Post Content By ID(`/api/posts/raw/{postId}`):
+_Description_: Retrieve post content by its ID.  
+_Parameters_: none.
+
 ### `GET` Post By Title(`/api/posts/bytitle`):
 **(special endpoint)**  
 _Description_: Search a post by its title.  
@@ -142,7 +146,7 @@ _Parameters_: **user**(`User`).
 ## Examples
 Below there are some practical examples on how to use the REST API:
 
-1. **Add a non-anonymous, perpetual post**(_note: the user must exist_)  
+1. **Add a non-anonymous**(_note: the user must exist_)  
 
 `POST` request to `/api/posts/new` with the following body:
 ```json
@@ -192,6 +196,10 @@ Below there are some practical examples on how to use the REST API:
 ```
 
 In this case user `john@example.com` is a user of the class `PRIVILEGED`.
+
+5. **Get content of post "`af4598c`"**
+
+`GET` request to `/api/posts/raw/af4598c` with empty body.
 
 ## Unit tests
 The **bit** platform provides some unit tests for the _post_ and the _user_ controllers. You can
