@@ -36,7 +36,7 @@ public class UserController {
     /**
      * Get all users if user is PRIVILEGED
      *
-     * @Param user the email and the password
+     * @param user the email and the password
      * @return on success, the list of users, on failure the error message
      */
     @GetMapping("/api/users")

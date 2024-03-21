@@ -73,10 +73,8 @@ public class PostController {
             throw new GenericErrorException(res.getLeft().getMessage(), "error");
         }
 
-        var content = res.get().getContent();
-        var jsonOutput = new JsonEmitter<>(content).emitJsonKey();
-
-        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
+        var content = "<pre>" + res.get().getContent() + "</pre>";
+        return new ResponseEntity<>(content, HttpStatus.OK);
     }
 
     /**
