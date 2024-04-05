@@ -20,7 +20,7 @@ ARG SPRING_DATASOURCE_PASSWORD="test"
 RUN chmod +x mvnw && ./mvnw package
 
 # RUN STAGE
-FROM amazoncorretto:21 as run
+FROM amazoncorretto:22 as run
 
 # Configure working environment
 VOLUME /tmp
