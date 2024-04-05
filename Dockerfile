@@ -1,5 +1,5 @@
 # BUILD STAGE
-FROM amazoncorretto:21 as build
+FROM amazoncorretto:22 as build
 LABEL author="Marco Cetica"
 
 # Prepare working environment
