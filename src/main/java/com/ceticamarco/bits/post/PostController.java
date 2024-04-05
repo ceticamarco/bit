@@ -73,7 +73,11 @@ public class PostController {
             throw new GenericErrorException(res.getLeft().getMessage(), "error");
         }
 
-        var content = "<pre>" + res.get().getContent() + "</pre>";
+        var content = res.get().getContent();
+        content = content.replaceAll("<", "&lt;");
+        content = content.replaceAll(">", "&gt;");
+        content = "<pre>" + content + "</pre>";
+
         return new ResponseEntity<>(content, HttpStatus.OK);
     }
 
