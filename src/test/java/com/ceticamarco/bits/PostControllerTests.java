@@ -3,8 +3,8 @@ package com.ceticamarco.bits;
 import com.ceticamarco.bits.post.Post;
 import com.ceticamarco.bits.post.PostService;
 import com.ceticamarco.bits.user.User;
+import com.ceticamarco.lambdatonic.Right;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.control.Either;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,9 +44,9 @@ public class PostControllerTests {
         user.setEmail("john@example.com");
         user.setPassword("qwerty");
 
-        when(postService.getPosts(any(User.class))).thenReturn(Either.right(List.of(post)));
+        when(postService.getPosts(any(User.class))).thenReturn(new Right<>(List.of(post)));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/posts")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -62,7 +61,7 @@ public class PostControllerTests {
         post.setTitle("test");
         post.setContent("This is a test");
 
-        when(postService.getPostById(anyString())).thenReturn(Either.right(post));
+        when(postService.getPostById(anyString())).thenReturn(new Right<>(post));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -79,10 +78,11 @@ public class PostControllerTests {
         post.setTitle("test");
         post.setContent("This is a test");
 
-        when(postService.getPostById(anyString())).thenReturn(Either.right(post));
+        when(postService.getPostById(anyString())).thenReturn(new Right<>(post));
 
         mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/raw/abc123")
                         .contentType(MediaType.APPLICATION_JSON)
+                        .header("Accept", "*/*")
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
 
@@ -100,9 +100,9 @@ public class PostControllerTests {
         post.setContent("This is a test");
         post.setUser(user);
 
-        when(postService.getPostByTitle(any(Post.class))).thenReturn(Either.right(List.of(post)));
+        when(postService.getPostByTitle(any(Post.class))).thenReturn(new Right<>(List.of(post)));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/posts/bytitle")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/posts/bytitle")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(post)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -116,7 +116,7 @@ public class PostControllerTests {
         post.setTitle("test");
         post.setContent("This is a test");
 
-        when(postService.addNewPost(any(Post.class))).thenReturn(Either.right(anyString()));
+        when(postService.addNewPost(any(Post.class))).thenReturn(new Right<>(anyString()));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/posts/new")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -129,8 +129,12 @@ public class PostControllerTests {
     @Test
     public void updatePost() throws Exception {
         var post = new Post();
+        var user = new User();
         post.setTitle("test");
         post.setContent("This is a test");
+        user.setEmail("john@example.com");
+        user.setPassword("qwerty");
+        post.setUser(user);
 
         when(postService.updatePost(any(Post.class), anyString())).thenReturn(Optional.empty());
 

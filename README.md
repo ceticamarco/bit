@@ -106,12 +106,12 @@ _Parameters_: **username**(`string`), **email**(`string`) **password**(`string`)
 _Description_: Delete an existing user.  
 _Parameters_: **email**(`string`) **password**(`string`).
 
-### `GET` User List(`/api/users`):
+### `POST` User List(`/api/users`):
 **(special endpoint)**  
 _Description_: Retrieve all users.  
 _Parameters_: **email**(`string`), **password**(`string`).
 
-### `GET` Post List(`/api/posts`):
+### `POST` Post List(`/api/posts`):
 **(special endpoint)**  
 _Description_: Retrieve all posts.  
 _Parameters_: **email**(`string`), **password**(`string`).
@@ -124,7 +124,7 @@ _Parameters_: none.
 _Description_: Retrieve post content by its ID.  
 _Parameters_: none.
 
-### `GET` Post By Title(`/api/posts/bytitle`):
+### `POST` Post By Title(`/api/posts/bytitle`):
 **(special endpoint)**  
 _Description_: Search a post by its title.  
 _Parameters_: **title**(`string`), **user**(`User`).

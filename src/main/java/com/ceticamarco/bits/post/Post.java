@@ -5,7 +5,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 
@@ -14,11 +13,6 @@ import java.time.LocalDate;
 public class Post {
     @Id
     @Column(name = "postID", nullable = false, updatable = false)
-    @GeneratedValue(generator = "customUUID")
-    @GenericGenerator(
-            name = "customUUID",
-            type = com.ceticamarco.bits.customGenerator.CustomUUID.class
-    )
     private String id;
 
     @NotEmpty(message = "title cannot be empty")

@@ -13,5 +13,6 @@ jobs:
       - name: Build Docker image
         run: |
           apt -y update && apt -y install docker.io docker-compose
-          sed -i 's/version: "3.9"/version: "2.2"/g' docker-compose.yml
+          mv compose.yml docker-compose.yml
+          echo -e "version: \"2.2\"\n$(cat docker-compose.yml)" > docker-compose.yml
           docker-compose build

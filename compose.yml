@@ -1,5 +1,3 @@
-version: "3.9"
-
 networks:
   bit:
     external: false
@@ -22,7 +20,8 @@ services:
     networks:
       - bit
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: postgres:latest
     container_name: "bit_db"
@@ -35,3 +34,5 @@ services:
       - bit
     volumes:
       - ./postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: pg_isready -U bituser -d bit

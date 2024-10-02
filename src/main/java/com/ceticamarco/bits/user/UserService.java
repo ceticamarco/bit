@@ -1,6 +1,8 @@
 package com.ceticamarco.bits.user;
 
-import io.vavr.control.Either;
+import com.ceticamarco.lambdatonic.Either;
+import com.ceticamarco.lambdatonic.Left;
+import com.ceticamarco.lambdatonic.Right;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -37,11 +39,11 @@ public class UserService {
     public Either<Error, List<User>> getUsers(User user) {
         // Check if user exists, credentials are correct and the role is 'PRIVILEGED'
         if(!isUserAuthorized(user)) {
-            return Either.left(new Error("Wrong credentials or insufficient privileges"));
+            return new Left<>(new Error("Wrong credentials or insufficient privileges"));
         }
 
         // Otherwise, retrieve all users
-        return Either.right(userRepository.findAll().stream().map(u -> {
+        return new Right<>(userRepository.findAll().stream().map(u -> {
             u.setPassword(null);
             return u;
         })
@@ -55,7 +57,7 @@ public class UserService {
 
         // If they are found, return an error
         if(userEmail.isPresent() || userName.isPresent()) {
-            return Either.left(new Error("Email or username already taken"));
+            return new Left<>(new Error("Email or username already taken"));
         }
 
         // Set user role(by default all users are unprivileged)
@@ -68,7 +70,7 @@ public class UserService {
         // Save the new user into the database and return its ID
         var userId = userRepository.save(user).getId();
 
-        return Either.right(userId);
+        return new Right<>(userId);
     }
 
     @Transactional

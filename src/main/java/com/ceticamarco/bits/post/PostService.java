@@ -2,7 +2,9 @@ package com.ceticamarco.bits.post;
 
 import com.ceticamarco.bits.user.User;
 import com.ceticamarco.bits.user.UserRepository;
-import io.vavr.control.Either;
+import com.ceticamarco.lambdatonic.Either;
+import com.ceticamarco.lambdatonic.Left;
+import com.ceticamarco.lambdatonic.Right;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -12,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -33,6 +36,10 @@ public class PostService {
         return userSearch.get().getRole() == User.UserRole.PRIVILEGED;
     }
 
+    private String generatePostID() {
+        return UUID.randomUUID().toString().substring(0, 6);
+    }
+
     @Autowired
     public PostService(UserRepository userRepository, PostRepository postRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
@@ -43,11 +50,11 @@ public class PostService {
     public Either<Error, List<Post>> getPosts(User user) {
         // Check if user exists, credentials are correct and the role is 'PRIVILEGED'
         if(!isUserAuthorized(user)) {
-            return Either.left(new Error("Wrong credentials or insufficient privileges"));
+            return new Left<>(new Error("Wrong credentials or insufficient privileges"));
         }
 
         // Otherwise, retrieve all posts and filter out expired one
-        return Either.right(postRepository.findAll().stream().map(post -> {
+        return new Right<>(postRepository.findAll().stream().map(post -> {
             if(post.getUser() != null) {
                 post.getUser().setId(null);
                 post.getUser().setPassword(null);
@@ -63,12 +70,12 @@ public class PostService {
 
         // Check whether the post exists
         if(post.isEmpty()) {
-            return Either.left(new Error("Cannot find post"));
+            return new Left<>(new Error("Cannot find post"));
         }
 
         // Check if post is expired
         if(post.get().getExpirationDate() != null && !post.get().getExpirationDate().isAfter(LocalDate.now())) {
-            return Either.left(new Error("This post has expired"));
+            return new Left<>(new Error("This post has expired"));
         }
 
         // Conceal personal user information if available
@@ -77,17 +84,17 @@ public class PostService {
             post.get().getUser().setPassword(null);
         }
 
-        return Either.right(post.get());
+        return new Right<>(post.get());
     }
 
     public Either<Error, List<Post>> getPostByTitle(Post post) {
         // Check if user exists, credentials are correct and the role is 'PRIVILEGED'
         if(!isUserAuthorized(post.getUser())) {
-            return Either.left(new Error("Wrong credentials or insufficient privileges"));
+            return new Left<>(new Error("Wrong credentials or insufficient privileges"));
         }
 
         // Otherwise, retrieve all posts by title and filter out expired one
-        return Either.right(postRepository.findPostByTitle(post.getTitle()).stream().map(p -> {
+        return new Right<>(postRepository.findPostByTitle(post.getTitle()).stream().map(p -> {
             // Conceal user information
             if(p.getUser() != null) {
                 p.getUser().setId(null);
@@ -108,7 +115,7 @@ public class PostService {
 
             // Then check if user is registered
             if(user.filter(s -> passwordEncoder.matches(rawPassword, s.getPassword())).isEmpty()) {
-                return Either.left(new Error("Wrong email or password"));
+                return new Left<>(new Error("Wrong email or password"));
             }
             // Finally, link the user to the post
             user.ifPresent(post::setUser);
@@ -123,15 +130,18 @@ public class PostService {
             post.setExpirationDate(currentDate.plusWeeks(1));
         }
 
-        // Discard posts with expiration date greater than the current year
-        if(post.getExpirationDate().getYear() > LocalDate.now().getYear()) {
-            return Either.left(new Error("expiration date must be within this year"));
+        // Discard posts with expiration data greater than one year from now
+        if(post.getExpirationDate().isAfter(LocalDate.now().plusYears(1))) {
+            return new Left<>(new Error("Expiration data must be within a year from now"));
         }
+
+        // Generate a custom ID for the post
+        post.setId(generatePostID());
 
         // Save the post into the database and return its ID
         var postId = postRepository.save(post).getId();
 
-        return Either.right(postId);
+        return new Right<>(postId);
     }
 
     @Transactional
@@ -141,11 +151,6 @@ public class PostService {
         // Check whether the post exists
         if(post.isEmpty()) {
             return Optional.of(new Error("Cannot find post"));
-        }
-
-        // Check whether email and password are specified in the request
-        if(req.getUser() == null || req.getUser().getEmail() == null || req.getUser().getPassword() == null) {
-            return Optional.of(new Error("Email or password not provided"));
         }
 
         // Check whether post is anonymous

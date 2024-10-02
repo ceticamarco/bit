@@ -1,11 +1,9 @@
 package com.ceticamarco.bits.user;
 
-import com.ceticamarco.bits.customGenerator.CustomUUID;
 import com.ceticamarco.bits.post.Post;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -20,11 +18,7 @@ public class User {
 
     @Id
     @Column(name = "userID", nullable = false, updatable = false)
-    @GeneratedValue(generator = "customUUID")
-    @GenericGenerator(
-            name = "customUUID",
-            type = CustomUUID.class
-    )
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @NotEmpty(message = "username cannot be empty")

@@ -2,8 +2,8 @@ package com.ceticamarco.bits;
 
 import com.ceticamarco.bits.user.User;
 import com.ceticamarco.bits.user.UserService;
+import com.ceticamarco.lambdatonic.Right;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.vavr.control.Either;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,9 +39,9 @@ class UserControllerTest {
         user.setEmail("john@example.com");
         user.setPassword("qwerty");
 
-        when(userService.getUsers(any(User.class))).thenReturn(Either.right(List.of(user)));
+        when(userService.getUsers(any(User.class))).thenReturn(new Right<>(List.of(user)));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/users")
+        mockMvc.perform(MockMvcRequestBuilders.post("/api/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(user)))
                 .andExpect(MockMvcResultMatchers.status().isOk());
@@ -56,7 +56,7 @@ class UserControllerTest {
         user.setEmail("john@example.com");
         user.setPassword("qwerty");
 
-        when(userService.addNewUser(any(User.class))).thenReturn(Either.right(anyString()));
+        when(userService.addNewUser(any(User.class))).thenReturn(new Right<>(anyString()));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/users/new")
                         .contentType(MediaType.APPLICATION_JSON)

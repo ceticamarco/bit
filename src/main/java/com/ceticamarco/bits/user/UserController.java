@@ -1,8 +1,11 @@
 package com.ceticamarco.bits.user;
 
-import com.ceticamarco.bits.exception.GenericErrorException;
-import com.ceticamarco.bits.exception.UnauthorizedUserException;
+import com.ceticamarco.bits.ApiResult.ApiError;
+import com.ceticamarco.bits.ApiResult.ApiResult;
+import com.ceticamarco.bits.ApiResult.ApiSuccess;
 import com.ceticamarco.bits.json.JsonEmitter;
+import com.ceticamarco.lambdatonic.Left;
+import com.ceticamarco.lambdatonic.Right;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -39,22 +42,19 @@ public class UserController {
      * @param user the email and the password
      * @return on success, the list of users, on failure the error message
      */
-    @GetMapping("/api/users")
-    public ResponseEntity<List<User>> getUsers(@RequestBody User user) {
+    @PostMapping("/api/users")
+    public ResponseEntity<ApiResult> getUsers(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            throw new GenericErrorException("Specify both email and password", "error");
+            return new ResponseEntity<>(new ApiError("Specify both email and password"), HttpStatus.BAD_REQUEST);
         }
 
         // Get post list
-        var res = userService.getUsers(user);
-
-        // Check if user is authorized
-        if(res.isLeft()) {
-            throw new UnauthorizedUserException(res.getLeft().getMessage());
+        var result = userService.getUsers(user);
+        switch (result) {
+            case Left<Error, List<User>> err -> { return new ResponseEntity<>( new ApiError(err.value().getMessage()), HttpStatus.BAD_REQUEST); }
+            case Right<Error, List<User>> content -> { return new ResponseEntity<>(new ApiSuccess<>(content.value()), HttpStatus.OK); }
         }
-
-        return new ResponseEntity<>(res.get(), HttpStatus.OK);
     }
 
     /**
@@ -67,16 +67,21 @@ public class UserController {
     public ResponseEntity<String> submitUser(@Valid @RequestBody User user) {
         // Check if user registration is disabled
         if(isSignupDisabled()) {
-            throw new GenericErrorException("Registration is disabled", "error");
+            var jsonOutput = new JsonEmitter<>("Registration is disabled").emitJsonKey("error");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
         }
 
-        var res = userService.addNewUser(user);
-        if(res.isLeft()) {
-            throw new GenericErrorException(res.getLeft().getMessage(), "error");
+        var result = userService.addNewUser(user);
+        switch (result) {
+            case Left<Error, String> err -> {
+                var jsonOutput = new JsonEmitter<>(err.value().getMessage()).emitJsonKey("error");
+                return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
+            }
+            case Right<Error, String> content -> {
+                var jsonOutput = new JsonEmitter<>(content.value()).emitJsonKey("user_id");
+                return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
+            }
         }
-
-        var jsonOutput = new JsonEmitter<>(res.get()).emitJsonKey("user_id");
-        return new ResponseEntity<>(jsonOutput, HttpStatus.OK);
     }
 
     /**
@@ -89,12 +94,14 @@ public class UserController {
     public ResponseEntity<String> deleteUser(@RequestBody User user) {
         // Check if email and password are specified
         if(user.getPassword() == null || user.getEmail() == null) {
-            throw new GenericErrorException("Specify both email and password", "error");
+            var jsonOutput = new JsonEmitter<>("Specify both email and password").emitJsonKey("error");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
         }
         // Delete the user
         var res = userService.deleteUser(user);
         if(res.isPresent()) {
-            throw new GenericErrorException(res.get().getMessage(), "error");
+            var jsonOutput = new JsonEmitter<>(res.get().getMessage()).emitJsonKey("error");
+            return new ResponseEntity<>(jsonOutput, HttpStatus.BAD_REQUEST);
         }
 
         var jsonOutput = new JsonEmitter<>("OK").emitJsonKey("status");

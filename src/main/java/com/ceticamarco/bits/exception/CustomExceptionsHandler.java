@@ -39,15 +39,6 @@ public class CustomExceptionsHandler {
         );
     }
 
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    @ExceptionHandler(UnauthorizedUserException.class)
-    public ResponseEntity<String> unauthorizedUserException(UnauthorizedUserException e) {
-        return new ResponseEntity<>(
-                new JsonEmitter<>(e.getMessage()).emitJsonKey("error"),
-                HttpStatus.UNAUTHORIZED
-        );
-    }
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DateTimeParseException.class)
     public ResponseEntity<String> handleDateTimeParseException(DateTimeParseException ex) {
